@@ -12,12 +12,14 @@ if [ ! -f .env ]; then
     read
 fi
 
-# Start Docker containers
-echo "Starting Docker containers..."
+# Build and start Docker containers
+echo "Building and starting Docker containers..."
+docker-compose down
+docker-compose build
 docker-compose up -d
 
 echo "Waiting for MySQL to be ready..."
-sleep 10
+sleep 15
 
 # Install Composer dependencies for the custom module
 echo "Installing AWS SDK via Composer..."
@@ -37,6 +39,11 @@ echo ""
 echo "3. After installation, enable the module:"
 echo "   docker-compose exec drupal drush en s3_uppy -y"
 echo "   docker-compose exec drupal drush cr"
+echo ""
+echo "   OR via Drupal UI:"
+echo "   - Visit /admin/modules"
+echo "   - Find and enable 'S3 Uppy Video Uploader'"
+echo "   - Click 'Install'"
 echo ""
 echo "4. Grant permissions to users:"
 echo "   Visit /admin/people/permissions and enable 'Upload videos to S3'"
