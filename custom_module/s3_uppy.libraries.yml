@@ -1,0 +1,12 @@
+uppy:
+  version: 1.x
+  js:
+    https://releases.transloadit.com/uppy/v3.24.0/uppy.min.js: { type: external, minified: true }
+    js/s3-uppy-upload.js: {}
+  css:
+    theme:
+      https://releases.transloadit.com/uppy/v3.24.0/uppy.min.css: { type: external, minified: true }
+      css/s3-uppy.css: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings

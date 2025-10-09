@@ -1,0 +1,23 @@
+s3_uppy.upload_form:
+  path: '/s3-video-upload'
+  defaults:
+    _form: '\Drupal\s3_uppy\Form\S3VideoUploadForm'
+    _title: 'Upload Video to S3'
+  requirements:
+    _permission: 'upload videos to s3'
+
+s3_uppy.generate_presigned_url:
+  path: '/s3-uppy/generate-url'
+  defaults:
+    _controller: '\Drupal\s3_uppy\Controller\S3UploadController::generatePresignedUrl'
+  requirements:
+    _permission: 'upload videos to s3'
+    _method: 'POST'
+
+s3_uppy.upload_complete:
+  path: '/s3-uppy/upload-complete'
+  defaults:
+    _controller: '\Drupal\s3_uppy\Controller\S3UploadController::uploadComplete'
+  requirements:
+    _permission: 'upload videos to s3'
+    _method: 'POST'

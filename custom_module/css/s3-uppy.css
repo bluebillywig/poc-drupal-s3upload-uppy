@@ -1,0 +1,53 @@
+/* Uppy Dashboard Container */
+#uppy-dashboard {
+  margin: 20px 0;
+}
+
+/* Upload Status Messages */
+#upload-status {
+  margin-top: 20px;
+}
+
+.upload-message {
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  animation: slideIn 0.3s ease-out;
+}
+
+.upload-message--success {
+  background-color: #d4edda;
+  border-color: #28a745;
+  color: #155724;
+}
+
+.upload-message--error {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
+}
+
+.upload-message--info {
+  background-color: #d1ecf1;
+  border-color: #17a2b8;
+  color: #0c5460;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #uppy-dashboard {
+    margin: 10px 0;
+  }
+}

@@ -1,0 +1,7 @@
+name: S3 Uppy Video Uploader
+type: module
+description: 'Direct S3 video uploads using Uppy with server-side URL signing'
+core_version_requirement: ^10
+package: Custom
+dependencies:
+  - drupal:node

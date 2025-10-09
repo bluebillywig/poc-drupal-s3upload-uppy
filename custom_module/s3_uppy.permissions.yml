@@ -1,0 +1,3 @@
+upload videos to s3:
+  title: 'Upload videos to S3'
+  description: 'Allows users to upload video files directly to S3'

@@ -1,0 +1,13 @@
+{
+  "name": "custom/s3_uppy",
+  "description": "S3 video uploader with Uppy",
+  "type": "drupal-custom-module",
+  "require": {
+    "aws/aws-sdk-php": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Drupal\\s3_uppy\\": "src/"
+    }
+  }
+}
