@@ -59,6 +59,7 @@ class BlueBillywigOvpClient {
 
     $totp = TOTP::createFromSecret($base32Secret);
     $totp->setPeriod(120); // 120 seconds step/window
+    $totp->setDigits(10); // 10-digit OTP
     $otp = $totp->now();
 
     return $this->apiId . '-' . $otp;
