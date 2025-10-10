@@ -26,8 +26,8 @@ services:
       - AWS_S3_UPLOAD_PREFIX=${AWS_S3_UPLOAD_PREFIX:-upload/}
       - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT:-}
       # Blue Billywig OVP Configuration
+      - BB_PUBLICATION=${BB_PUBLICATION}
       - OVP_API_SECRET=${OVP_API_SECRET}
-      - OVP_HOSTNAME=${OVP_HOSTNAME}
     depends_on:
       - mysql
     restart: unless-stopped

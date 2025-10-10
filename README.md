@@ -36,11 +36,11 @@ A Drupal 10 application with direct S3 video uploads using Uppy on the client-si
    AWS_SECRET_ACCESS_KEY=your_secret_key
    AWS_S3_BUCKET=your-bucket-name
    AWS_S3_REGION=eu-west-1
-   AWS_S3_UPLOAD_PREFIX=upload/ott.dev/
+   AWS_S3_UPLOAD_PREFIX=upload/YOUR_PUBLICATION/
 
    # Blue Billywig OVP Configuration (optional)
+   BB_PUBLICATION=YOUR_PUBLICATION
    OVP_API_SECRET=123-yoursecretstring
-   OVP_HOSTNAME=<your publication name>.bbvms.com
    ```
 
 2. **Start the Docker stack:**

@@ -10,17 +10,19 @@ Update your `.env` file with:
 
 ```bash
 # Blue Billywig OVP Configuration
+BB_PUBLICATION=YOUR_PUBLICATION
 OVP_API_SECRET=<numerical_id>-<secret>
-OVP_HOSTNAME=<your-ovp-hostname>
 ```
 
 For example:
 ```bash
+BB_PUBLICATION=mycompany
 OVP_API_SECRET=123-mysecretstring
-OVP_HOSTNAME=<your publication name>.bbvms.com
 ```
 
-**Note**: The secret is provided as a plain string in the .env file. It will be automatically Base32 encoded internally before being used for TOTP generation.
+**Notes**:
+- `BB_PUBLICATION` is your Blue Billywig publication name. The system will automatically construct the API hostname as `{BB_PUBLICATION}.bbvms.com`
+- The secret is provided as a plain string in the .env file. It will be automatically Base32 encoded internally before being used for TOTP generation.
 
 ## How It Works
 
@@ -64,11 +66,15 @@ docker-compose up -d
 
 ## Testing
 
-1. Set valid OVP credentials in `.env`
+1. Set valid OVP credentials in `.env`:
+   ```bash
+   BB_PUBLICATION=your_publication_name
+   OVP_API_SECRET=123-yoursecretstring
+   ```
 2. Restart containers: `docker-compose restart`
 3. Visit: http://localhost:8080/s3-video-upload
-4. You should see: "Upload Identifier: xxx | MediaClip ID: xxx | GUID: xxx"
-5. Upload a video file - it will use the OVP-generated identifier
+4. Select a video file - the system will automatically register with OVP at `{BB_PUBLICATION}.bbvms.com`
+5. Upload proceeds with OVP-generated identifier
 
 ## API Endpoints
 

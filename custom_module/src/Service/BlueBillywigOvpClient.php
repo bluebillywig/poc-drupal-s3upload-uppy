@@ -36,7 +36,13 @@ class BlueBillywigOvpClient {
    */
   public function __construct() {
     $apiSecretFull = getenv('OVP_API_SECRET');
-    $this->hostname = getenv('OVP_HOSTNAME');
+    $publication = getenv('BB_PUBLICATION');
+
+    // Build hostname from publication name
+    if (empty($publication)) {
+      throw new \Exception('BB_PUBLICATION environment variable is required');
+    }
+    $this->hostname = $publication . '.bbvms.com';
 
     // Parse the API secret (format: 123-secret)
     // The ID and secret are separated, but only the secret is used for TOTP
