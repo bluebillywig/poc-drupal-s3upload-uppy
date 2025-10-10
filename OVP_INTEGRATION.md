@@ -16,9 +16,11 @@ OVP_HOSTNAME=<your-ovp-hostname>
 
 For example:
 ```bash
-OVP_API_SECRET=123-lewfjlekrjfger
+OVP_API_SECRET=123-mysecretstring
 OVP_HOSTNAME=api.bluebillywig.com
 ```
+
+**Note**: The secret is provided as a plain string in the .env file. It will be automatically Base32 encoded internally before being used for TOTP generation.
 
 ## How It Works
 

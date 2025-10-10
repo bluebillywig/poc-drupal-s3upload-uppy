@@ -3,6 +3,7 @@
 namespace Drupal\s3_uppy\Service;
 
 use OTPHP\TOTP;
+use ParagonIE\ConstantTime\Base32;
 
 /**
  * Blue Billywig OVP API client with TOTP authentication.
@@ -53,7 +54,10 @@ class BlueBillywigOvpClient {
    *   The TOTP token in format: <id>-<otp>
    */
   protected function generateRpcToken() {
-    $totp = TOTP::createFromSecret($this->apiSecret);
+    // Base32 encode the secret string before using with TOTP
+    $base32Secret = Base32::encodeUpper($this->apiSecret);
+
+    $totp = TOTP::createFromSecret($base32Secret);
     $totp->setPeriod(120); // 120 seconds step/window
     $otp = $totp->now();
 
