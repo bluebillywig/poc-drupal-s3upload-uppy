@@ -40,7 +40,7 @@ A Drupal 10 application with direct S3 video uploads using Uppy on the client-si
 
    # Blue Billywig OVP Configuration (optional)
    OVP_API_SECRET=123-yoursecretstring
-   OVP_HOSTNAME=api.bluebillywig.com
+   OVP_HOSTNAME=<your publication name>.bbvms.com
    ```
 
 2. **Start the Docker stack:**
