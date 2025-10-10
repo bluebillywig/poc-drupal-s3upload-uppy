@@ -87,12 +87,15 @@ class BlueBillywigOvpClient {
       $payload['originalfilename'] = $originalFilename;
     }
 
-    $payload = json_encode($payload);
+    $payloadJson = json_encode($payload);
     $rpcToken = $this->generateRpcToken();
+
+    // Debug logging to stderr
+    error_log("OVP CREATE MEDIACLIP - Payload: " . $payloadJson);
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadJson);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
       'Content-Type: application/json',
