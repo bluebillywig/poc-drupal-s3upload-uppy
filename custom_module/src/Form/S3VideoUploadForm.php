@@ -40,7 +40,7 @@ class S3VideoUploadForm extends FormBase {
 
     $form['ovp_info'] = [
       '#type' => 'markup',
-      '#markup' => '<div id="ovp-info" style="margin-bottom: 1em;"><em>Generating upload identifier from Blue Billywig OVP...</em></div>',
+      '#markup' => '<div id="ovp-info" style="margin-bottom: 1em;"><em>Select or drop a video file to begin...</em></div>',
     ];
 
     // Hidden field to store upload identifier
