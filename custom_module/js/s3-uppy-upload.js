@@ -5,6 +5,11 @@
     attach: function (context, settings) {
       const uppySettings = drupalSettings.s3Uppy || {};
 
+      const ovpInfoDiv = document.getElementById('ovp-info');
+      const uploadIdentifierField = document.getElementById('upload-identifier-field');
+      let ovpData = null;
+      let fetchingIdentifier = false;
+
       // ✅ NEW v3 syntax
       const {Uppy, Dashboard, AwsS3} = window.Uppy;
       const uppy = new Uppy({
@@ -26,15 +31,67 @@
         height: 470,
       });
 
+      // Fetch upload identifier when file is added
+      uppy.on('file-added', async (file) => {
+        if (fetchingIdentifier || ovpData) {
+          return; // Already fetching or have identifier
+        }
+
+        fetchingIdentifier = true;
+        ovpInfoDiv.innerHTML = '<em>Registering upload with Blue Billywig OVP...</em>';
+
+        try {
+          // Get title and description from form fields
+          const titleField = document.getElementById('clip-title-field');
+          const descriptionField = document.getElementById('clip-description-field');
+          const title = titleField ? titleField.value : '';
+          const description = descriptionField ? descriptionField.value : '';
+
+          const response = await fetch(uppySettings.generateUploadIdentifierEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              filename: file.name,
+              title: title,
+              description: description,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.error) {
+            ovpInfoDiv.innerHTML = '<strong style="color: red;">Error: ' + data.error + '</strong>';
+            uppy.removeFile(file.id);
+            return;
+          }
+
+          ovpData = data;
+          uploadIdentifierField.value = data.uploadidentifier;
+          ovpInfoDiv.innerHTML = '<strong>Upload Identifier:</strong> ' + data.uploadidentifier +
+                                 ' | <strong>MediaClip ID:</strong> ' + data.mediaclipId +
+                                 ' | <strong>GUID:</strong> ' + data.guid;
+        } catch (error) {
+          ovpInfoDiv.innerHTML = '<strong style="color: red;">Failed to register upload: ' + error.message + '</strong>';
+          uppy.removeFile(file.id);
+        } finally {
+          fetchingIdentifier = false;
+        }
+      });
+
       // ✅ NEW v3 plugin syntax
       uppy.use(AwsS3, {
         async getUploadParameters(file) {
-          // Get upload identifier from form field
-          const uploadIdentifierField = document.getElementById('upload-identifier-field');
+          // Wait for upload identifier if still fetching
+          while (fetchingIdentifier) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+
           const uploadIdentifier = uploadIdentifierField ? uploadIdentifierField.value : '';
 
           if (!uploadIdentifier) {
-            throw new Error('Please enter an upload identifier before uploading files');
+            throw new Error('Upload identifier not available. Please try again.');
           }
 
           const response = await fetch(uppySettings.generateUrlEndpoint, {

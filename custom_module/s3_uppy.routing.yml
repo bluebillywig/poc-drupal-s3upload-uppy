@@ -21,3 +21,11 @@ s3_uppy.upload_complete:
   requirements:
     _permission: 'upload videos to s3'
     _method: 'POST'
+
+s3_uppy.generate_upload_identifier:
+  path: '/s3-uppy/generate-upload-identifier'
+  defaults:
+    _controller: '\Drupal\s3_uppy\Controller\S3UploadController::generateUploadIdentifier'
+  requirements:
+    _permission: 'upload videos to s3'
+    _method: 'POST'
