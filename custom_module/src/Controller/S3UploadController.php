@@ -178,6 +178,43 @@ class S3UploadController extends ControllerBase {
   }
 
   /**
+   * Get embed code for a MediaClip.
+   */
+  public function getEmbedCode(Request $request) {
+    try {
+      $data = json_decode($request->getContent(), TRUE);
+      $mediaclipId = $data['mediaclipId'] ?? '';
+
+      if (empty($mediaclipId)) {
+        return new JsonResponse([
+          'error' => 'MediaClip ID is required',
+        ], 400);
+      }
+
+      // Get playout config from settings
+      $playout = $this->getConfigValue('bb_playout', 'BB_PLAYOUT', 'default');
+
+      // Get embed code from OVP
+      $ovpClient = new \Drupal\s3_uppy\Service\BlueBillywigOvpClient();
+      $embedCode = $ovpClient->getEmbedCode($mediaclipId, $playout);
+
+      return new JsonResponse([
+        'embedCode' => $embedCode,
+        'mediaclipId' => $mediaclipId,
+      ]);
+    }
+    catch (\Exception $e) {
+      \Drupal::logger('s3_uppy')->error('Error getting embed code: @error', [
+        '@error' => $e->getMessage(),
+      ]);
+
+      return new JsonResponse([
+        'error' => 'Failed to get embed code: ' . $e->getMessage(),
+      ], 500);
+    }
+  }
+
+  /**
    * Handle upload completion callback.
    */
   public function uploadComplete(Request $request) {

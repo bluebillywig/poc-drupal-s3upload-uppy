@@ -26,3 +26,6 @@ s3_uppy.settings:
     bb_api_secret:
       type: string
       label: 'Blue Billywig API Secret'
+    bb_playout:
+      type: string
+      label: 'Blue Billywig Playout Configuration'

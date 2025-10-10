@@ -104,6 +104,13 @@ class S3UppySettingsForm extends ConfigFormBase {
       '#attributes' => ['autocomplete' => 'off'],
     ];
 
+    $form['bluebillywig']['bb_playout'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Playout Configuration'),
+      '#default_value' => $config->get('bb_playout') ?: getenv('BB_PLAYOUT') ?: 'default',
+      '#description' => $this->t('Playout configuration name for embed code generation (e.g., default). Falls back to BB_PLAYOUT environment variable or "default".'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -120,6 +127,7 @@ class S3UppySettingsForm extends ConfigFormBase {
       ->set('aws_s3_endpoint', $form_state->getValue('aws_s3_endpoint'))
       ->set('bb_publication', $form_state->getValue('bb_publication'))
       ->set('bb_api_secret', $form_state->getValue('bb_api_secret'))
+      ->set('bb_playout', $form_state->getValue('bb_playout'))
       ->save();
 
     parent::submitForm($form, $form_state);

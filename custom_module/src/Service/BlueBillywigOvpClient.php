@@ -192,6 +192,45 @@ class BlueBillywigOvpClient {
   }
 
   /**
+   * Get embed code for a MediaClip.
+   *
+   * @param int $mediaclipId
+   *   The MediaClip ID.
+   * @param string $playout
+   *   The playout configuration name (default: 'default').
+   *
+   * @return string
+   *   The JavaScript embed code.
+   *
+   * @throws \Exception
+   */
+  public function getEmbedCode($mediaclipId, $playout = 'default') {
+    $url = 'https://' . $this->hostname . '/sapi/embedcode/' . $mediaclipId . '/' . $playout . '/javascript';
+    $rpcToken = $this->generateRpcToken();
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'rpctoken: ' . $rpcToken,
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+      throw new \Exception('CURL error: ' . $curlError);
+    }
+
+    if ($httpCode !== 200) {
+      throw new \Exception('OVP API error (HTTP ' . $httpCode . '): ' . $response);
+    }
+
+    return $response;
+  }
+
+  /**
    * Register upload identifier in OVP backend.
    *
    * This creates a MediaClip and retrieves the upload identifier.

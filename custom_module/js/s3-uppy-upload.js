@@ -130,9 +130,38 @@
         },
       });
 
-      // Event handlers (should be the same)
-      uppy.on('upload-success', (file, response) => {
-        // ... your code
+      // Handle upload success - fetch and display embed code
+      uppy.on('complete', async (result) => {
+        if (result.successful.length > 0 && ovpData && ovpData.mediaclipId) {
+          ovpInfoDiv.innerHTML += '<br><em>Fetching embed code...</em>';
+
+          try {
+            const response = await fetch(uppySettings.getEmbedCodeEndpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                mediaclipId: ovpData.mediaclipId,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+              ovpInfoDiv.innerHTML += '<br><strong style="color: red;">Error fetching embed code: ' + data.error + '</strong>';
+              return;
+            }
+
+            // Display embed code
+            ovpInfoDiv.innerHTML += '<br><br><strong>Embed Code:</strong><br>' +
+                                    '<textarea readonly style="width: 100%; height: 150px; font-family: monospace; font-size: 12px;">' +
+                                    data.embedCode + '</textarea>';
+
+          } catch (error) {
+            ovpInfoDiv.innerHTML += '<br><strong style="color: red;">Failed to fetch embed code: ' + error.message + '</strong>';
+          }
+        }
       });
     }
   };
