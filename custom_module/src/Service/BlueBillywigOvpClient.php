@@ -147,11 +147,11 @@ class BlueBillywigOvpClient {
     }
 
     $data = json_decode($response, TRUE);
-    if (!isset($data['uploadidentifier'])) {
-      throw new \Exception('awsupload response missing uploadidentifier field');
+    if (!isset($data['uploadIdentifier'])) {
+      throw new \Exception('awsupload response missing uploadIdentifier field');
     }
 
-    return $data['uploadidentifier'];
+    return $data['uploadIdentifier'];
   }
 
   /**
