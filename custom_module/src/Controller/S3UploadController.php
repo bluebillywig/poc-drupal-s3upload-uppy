@@ -111,6 +111,9 @@ class S3UploadController extends ControllerBase {
    */
   public function generateUploadIdentifier(Request $request) {
     try {
+      $data = json_decode($request->getContent(), TRUE);
+      $filename = $data['filename'] ?? '';
+
       // Generate a GUID for sourceid
       $guid = sprintf(
         '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
@@ -126,7 +129,7 @@ class S3UploadController extends ControllerBase {
 
       // Initialize OVP client and register upload
       $ovpClient = new \Drupal\s3_uppy\Service\BlueBillywigOvpClient();
-      $result = $ovpClient->registerUpload($guid);
+      $result = $ovpClient->registerUpload($guid, $filename);
 
       return new JsonResponse([
         'uploadidentifier' => $result['uploadidentifier'],

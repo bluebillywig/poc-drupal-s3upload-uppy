@@ -71,15 +71,23 @@ class BlueBillywigOvpClient {
    *
    * @param string $guid
    *   The source ID (GUID).
+   * @param string $originalFilename
+   *   The original filename.
    *
    * @return array
    *   The MediaClip object with id field.
    *
    * @throws \Exception
    */
-  public function createMediaClip($guid) {
+  public function createMediaClip($guid, $originalFilename = '') {
     $url = 'https://' . $this->hostname . '/sapi/mediaclip';
-    $payload = json_encode(['sourceid' => $guid]);
+
+    $payload = ['sourceid' => $guid];
+    if (!empty($originalFilename)) {
+      $payload['originalfilename'] = $originalFilename;
+    }
+
+    $payload = json_encode($payload);
     $rpcToken = $this->generateRpcToken();
 
     $ch = curl_init($url);
@@ -161,15 +169,17 @@ class BlueBillywigOvpClient {
    *
    * @param string $guid
    *   The source ID (GUID).
+   * @param string $originalFilename
+   *   The original filename.
    *
    * @return array
    *   Array with 'uploadidentifier' and 'mediaclipId'.
    *
    * @throws \Exception
    */
-  public function registerUpload($guid) {
+  public function registerUpload($guid, $originalFilename = '') {
     // Step 1: Create MediaClip
-    $mediaclip = $this->createMediaClip($guid);
+    $mediaclip = $this->createMediaClip($guid, $originalFilename);
     $mediaclipId = $mediaclip['id'];
 
     // Step 2: Get upload identifier
