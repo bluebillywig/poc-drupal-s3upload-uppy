@@ -5,6 +5,31 @@
     attach: function (context, settings) {
       const uppySettings = drupalSettings.s3Uppy || {};
 
+      // Fetch upload identifier from OVP on page load
+      const ovpInfoDiv = document.getElementById('ovp-info');
+      const uploadIdentifierField = document.getElementById('upload-identifier-field');
+      let ovpData = null;
+
+      // Fetch upload identifier
+      fetch(uppySettings.generateUploadIdentifierEndpoint, {
+        method: 'POST',
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            ovpInfoDiv.innerHTML = '<strong style="color: red;">Error: ' + data.error + '</strong>';
+            return;
+          }
+          ovpData = data;
+          uploadIdentifierField.value = data.uploadidentifier;
+          ovpInfoDiv.innerHTML = '<strong>Upload Identifier:</strong> ' + data.uploadidentifier +
+                                 ' | <strong>MediaClip ID:</strong> ' + data.mediaclipId +
+                                 ' | <strong>GUID:</strong> ' + data.guid;
+        })
+        .catch(error => {
+          ovpInfoDiv.innerHTML = '<strong style="color: red;">Failed to fetch upload identifier: ' + error.message + '</strong>';
+        });
+
       // ✅ NEW v3 syntax
       const {Uppy, Dashboard, AwsS3} = window.Uppy;
       const uppy = new Uppy({

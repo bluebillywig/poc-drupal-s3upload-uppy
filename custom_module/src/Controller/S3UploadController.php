@@ -58,7 +58,8 @@ class S3UploadController extends ControllerBase {
 
     // Sanitize filename
     $filename = preg_replace('/[^a-zA-Z0-9._-]/', '', $filename);
-    $key = 'upload/ott.dev/' . uniqid() . '_' . $filename;
+    $prefix = getenv('AWS_S3_UPLOAD_PREFIX') ?: 'upload/';
+    $key = $prefix . uniqid() . '_' . $filename;
 
     try {
       // Initialize S3 client
@@ -101,6 +102,45 @@ class S3UploadController extends ControllerBase {
 
       return new JsonResponse([
         'error' => 'Failed to generate upload URL',
+      ], 500);
+    }
+  }
+
+  /**
+   * Generate upload identifier from Blue Billywig OVP.
+   */
+  public function generateUploadIdentifier(Request $request) {
+    try {
+      // Generate a GUID for sourceid
+      $guid = sprintf(
+        '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff)
+      );
+
+      // Initialize OVP client and register upload
+      $ovpClient = new \Drupal\s3_uppy\Service\BlueBillywigOvpClient();
+      $result = $ovpClient->registerUpload($guid);
+
+      return new JsonResponse([
+        'uploadidentifier' => $result['uploadidentifier'],
+        'mediaclipId' => $result['mediaclipId'],
+        'guid' => $guid,
+      ]);
+    }
+    catch (\Exception $e) {
+      \Drupal::logger('s3_uppy')->error('Error generating upload identifier: @error', [
+        '@error' => $e->getMessage(),
+      ]);
+
+      return new JsonResponse([
+        'error' => 'Failed to generate upload identifier: ' . $e->getMessage(),
       ], 500);
     }
   }

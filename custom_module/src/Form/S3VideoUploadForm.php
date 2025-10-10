@@ -28,6 +28,7 @@ class S3VideoUploadForm extends FormBase {
     $form['#attached']['drupalSettings']['s3Uppy'] = [
       'generateUrlEndpoint' => '/s3-uppy/generate-url',
       'uploadCompleteEndpoint' => '/s3-uppy/upload-complete',
+      'generateUploadIdentifierEndpoint' => '/s3-uppy/generate-upload-identifier',
       'maxFileSize' => 1024 * 1024 * 1024 * 20, // 20GB
       'allowedFileTypes' => ['.mp4', '.mov', '.avi', '.webm', '.ogg', '.mxf', '.mpg', '.mpeg', '.mkv'],
     ];
@@ -37,11 +38,14 @@ class S3VideoUploadForm extends FormBase {
       '#markup' => '<p>Upload video files directly to S3. Supported formats: MP4, MOV, AVI, WebM, OGG, MXF, MPG, MPEG, MKV. Maximum size: 20GB.</p>',
     ];
 
+    $form['ovp_info'] = [
+      '#type' => 'markup',
+      '#markup' => '<div id="ovp-info" style="margin-bottom: 1em;"><em>Generating upload identifier from Blue Billywig OVP...</em></div>',
+    ];
+
+    // Hidden field to store upload identifier
     $form['upload_identifier'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Upload Identifier'),
-      '#description' => $this->t('Enter a unique identifier for this upload.'),
-      '#required' => TRUE,
+      '#type' => 'hidden',
       '#attributes' => [
         'id' => 'upload-identifier-field',
       ],

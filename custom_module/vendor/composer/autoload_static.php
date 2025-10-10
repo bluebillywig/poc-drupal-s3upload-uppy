@@ -24,6 +24,12 @@ class ComposerStaticInit9deb70086eba2604d2771337e7b3a15b
         array (
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
+            'Psr\\Clock\\' => 10,
+            'ParagonIE\\ConstantTime\\' => 23,
+        ),
+        'O' => 
+        array (
+            'OTPHP\\' => 6,
         ),
         'J' => 
         array (
@@ -58,6 +64,18 @@ class ComposerStaticInit9deb70086eba2604d2771337e7b3a15b
         'Psr\\Http\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
+        ),
+        'Psr\\Clock\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/clock/src',
+        ),
+        'ParagonIE\\ConstantTime\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/paragonie/constant_time_encoding/src',
+        ),
+        'OTPHP\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/spomky-labs/otphp/src',
         ),
         'JmesPath\\' => 
         array (

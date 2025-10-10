@@ -3,7 +3,8 @@
   "description": "S3 video uploader with Uppy",
   "type": "drupal-custom-module",
   "require": {
-    "aws/aws-sdk-php": "^3.0"
+    "aws/aws-sdk-php": "^3.0",
+    "spomky-labs/otphp": "^11.0"
   },
   "autoload": {
     "psr-4": {
