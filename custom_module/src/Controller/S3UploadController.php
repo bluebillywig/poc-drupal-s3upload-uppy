@@ -2,6 +2,9 @@
 
 namespace Drupal\s3_uppy\Controller;
 
+// Load AWS SDK autoloader
+require_once __DIR__ . '/../../vendor/autoload.php';
+
 use Aws\S3\S3Client;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,9 +22,34 @@ class S3UploadController extends ControllerBase {
     $data = json_decode($request->getContent(), TRUE);
     $filename = $data['filename'] ?? '';
     $filetype = $data['filetype'] ?? '';
+    $uploadidentifier = $data['uploadidentifier'] ?? '';
+
+    // Debug logging
+    \Drupal::logger('s3_uppy')->debug('Received data: @data', [
+      '@data' => print_r($data, TRUE),
+    ]);
+
+    // Validate upload identifier
+    if (empty($uploadidentifier)) {
+      return new JsonResponse([
+        'error' => 'Upload identifier is required.',
+        'received_data' => $data,
+      ], 400);
+    }
 
     // Validate file type (only allow video files)
-    $allowed_types = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/ogg'];
+    $allowed_types = [
+      'video/mp4',
+      'video/quicktime',
+      'video/x-msvideo',
+      'video/webm',
+      'video/ogg',
+      'application/mxf',
+      'video/x-mxf',
+      'video/mpeg',
+      'video/x-matroska',
+      'video/mkv',
+    ];
     if (!in_array($filetype, $allowed_types)) {
       return new JsonResponse([
         'error' => 'Invalid file type. Only video files are allowed.',
@@ -30,7 +58,7 @@ class S3UploadController extends ControllerBase {
 
     // Sanitize filename
     $filename = preg_replace('/[^a-zA-Z0-9._-]/', '', $filename);
-    $key = 'uploads/' . date('Y/m/d') . '/' . uniqid() . '_' . $filename;
+    $key = 'upload/ott.dev/' . uniqid() . '_' . $filename;
 
     try {
       // Initialize S3 client
@@ -51,6 +79,9 @@ class S3UploadController extends ControllerBase {
         'Key' => $key,
         'ContentType' => $filetype,
         'ACL' => 'private',
+        'Metadata' => [
+          'uploadidentifier' => $uploadidentifier,
+        ],
       ]);
 
       // Generate presigned URL (valid for 15 minutes)

@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * @file
+ * S3 Uppy module file.
+ */
+
+// Load the module's vendor autoloader for AWS SDK.
+$autoloader = __DIR__ . '/vendor/autoload.php';
+if (file_exists($autoloader)) {
+  require_once $autoloader;
+}

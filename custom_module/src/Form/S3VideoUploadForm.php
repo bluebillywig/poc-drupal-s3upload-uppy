@@ -28,13 +28,23 @@ class S3VideoUploadForm extends FormBase {
     $form['#attached']['drupalSettings']['s3Uppy'] = [
       'generateUrlEndpoint' => '/s3-uppy/generate-url',
       'uploadCompleteEndpoint' => '/s3-uppy/upload-complete',
-      'maxFileSize' => 1024 * 1024 * 1024 * 2, // 2GB
-      'allowedFileTypes' => ['.mp4', '.mov', '.avi', '.webm', '.ogg'],
+      'maxFileSize' => 1024 * 1024 * 1024 * 20, // 20GB
+      'allowedFileTypes' => ['.mp4', '.mov', '.avi', '.webm', '.ogg', '.mxf', '.mpg', '.mpeg', '.mkv'],
     ];
 
     $form['description'] = [
       '#type' => 'markup',
-      '#markup' => '<p>Upload video files directly to S3. Supported formats: MP4, MOV, AVI, WebM, OGG. Maximum size: 2GB.</p>',
+      '#markup' => '<p>Upload video files directly to S3. Supported formats: MP4, MOV, AVI, WebM, OGG, MXF, MPG, MPEG, MKV. Maximum size: 20GB.</p>',
+    ];
+
+    $form['upload_identifier'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Upload Identifier'),
+      '#description' => $this->t('Enter a unique identifier for this upload.'),
+      '#required' => TRUE,
+      '#attributes' => [
+        'id' => 'upload-identifier-field',
+      ],
     ];
 
     // Container for Uppy
