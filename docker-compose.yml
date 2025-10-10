@@ -27,7 +27,7 @@ services:
       - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT:-}
       # Blue Billywig OVP Configuration
       - BB_PUBLICATION=${BB_PUBLICATION}
-      - OVP_API_SECRET=${OVP_API_SECRET}
+      - BB_API_SECRET=${BB_API_SECRET}
     depends_on:
       - mysql
     restart: unless-stopped

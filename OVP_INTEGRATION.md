@@ -11,13 +11,13 @@ Update your `.env` file with:
 ```bash
 # Blue Billywig OVP Configuration
 BB_PUBLICATION=YOUR_PUBLICATION
-OVP_API_SECRET=<numerical_id>-<secret>
+BB_API_SECRET=<numerical_id>-<secret>
 ```
 
 For example:
 ```bash
 BB_PUBLICATION=mycompany
-OVP_API_SECRET=123-mysecretstring
+BB_API_SECRET=123-mysecretstring
 ```
 
 **Notes**:
@@ -37,7 +37,7 @@ OVP_API_SECRET=123-mysecretstring
 
 - Uses 120-second step/window
 - Sends `rpctoken` header with format: `<id>-<otp>`
-- Secret configured via `OVP_API_SECRET`
+- Secret configured via `BB_API_SECRET`
 
 ## Files Modified/Created
 
@@ -69,7 +69,7 @@ docker-compose up -d
 1. Set valid OVP credentials in `.env`:
    ```bash
    BB_PUBLICATION=your_publication_name
-   OVP_API_SECRET=123-yoursecretstring
+   BB_API_SECRET=123-yoursecretstring
    ```
 2. Restart containers: `docker-compose restart`
 3. Visit: http://localhost:8080/s3-video-upload

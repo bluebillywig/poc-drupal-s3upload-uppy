@@ -35,7 +35,7 @@ class BlueBillywigOvpClient {
    * Constructor.
    */
   public function __construct() {
-    $apiSecretFull = getenv('OVP_API_SECRET');
+    $apiSecretFull = getenv('BB_API_SECRET');
     $publication = getenv('BB_PUBLICATION');
 
     // Build hostname from publication name
@@ -50,7 +50,7 @@ class BlueBillywigOvpClient {
       list($this->apiId, $this->apiSecret) = explode('-', $apiSecretFull, 2);
     }
     else {
-      throw new \Exception('Invalid OVP_API_SECRET format. Expected: <id>-<secret>');
+      throw new \Exception('Invalid BB_API_SECRET format. Expected: <id>-<secret>');
     }
   }
 
