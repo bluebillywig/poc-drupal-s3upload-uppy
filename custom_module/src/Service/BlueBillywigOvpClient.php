@@ -35,12 +35,22 @@ class BlueBillywigOvpClient {
    * Constructor.
    */
   public function __construct() {
-    $apiSecretFull = getenv('BB_API_SECRET');
-    $publication = getenv('BB_PUBLICATION');
+    // Get config with fallback to environment variables
+    $config = \Drupal::config('s3_uppy.settings');
+
+    $apiSecretFull = $config->get('bb_api_secret');
+    if (empty($apiSecretFull)) {
+      $apiSecretFull = getenv('BB_API_SECRET');
+    }
+
+    $publication = $config->get('bb_publication');
+    if (empty($publication)) {
+      $publication = getenv('BB_PUBLICATION');
+    }
 
     // Build hostname from publication name
     if (empty($publication)) {
-      throw new \Exception('BB_PUBLICATION environment variable is required');
+      throw new \Exception('BB_PUBLICATION configuration or environment variable is required');
     }
     $this->hostname = $publication . '.bbvms.com';
 

@@ -6,6 +6,17 @@ This feature automatically registers uploads with the Blue Billywig OVP backend 
 
 ## Configuration
 
+### Option 1: Admin UI (Recommended)
+
+1. Log into Drupal admin
+2. Navigate to: **Configuration > Media > S3 Uppy Settings**
+3. Or visit: http://localhost:8080/admin/config/media/s3-uppy
+4. Fill in the Blue Billywig OVP Configuration section:
+   - **Publication Name**: Your publication name (e.g., `mycompany`)
+   - **API Secret**: Format `<numerical_id>-<secret>` (e.g., `123-mysecretstring`)
+
+### Option 2: Environment Variables (Fallback)
+
 Update your `.env` file with:
 
 ```bash
@@ -22,7 +33,8 @@ BB_API_SECRET=123-mysecretstring
 
 **Notes**:
 - `BB_PUBLICATION` is your Blue Billywig publication name. The system will automatically construct the API hostname as `{BB_PUBLICATION}.bbvms.com`
-- The secret is provided as a plain string in the .env file. It will be automatically Base32 encoded internally before being used for TOTP generation.
+- The secret is provided as a plain string. It will be automatically Base32 encoded internally before being used for TOTP generation.
+- Environment variables are used as fallback if admin UI settings are not configured
 
 ## How It Works
 

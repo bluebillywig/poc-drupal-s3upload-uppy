@@ -29,3 +29,11 @@ s3_uppy.generate_upload_identifier:
   requirements:
     _permission: 'upload videos to s3'
     _method: 'POST'
+
+s3_uppy.settings:
+  path: '/admin/config/media/s3-uppy'
+  defaults:
+    _form: '\Drupal\s3_uppy\Form\S3UppySettingsForm'
+    _title: 'S3 Uppy Settings'
+  requirements:
+    _permission: 'administer site configuration'

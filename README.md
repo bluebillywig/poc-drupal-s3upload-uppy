@@ -26,10 +26,10 @@ A Drupal 10 application with direct S3 video uploads using Uppy on the client-si
 1. **Clone and configure environment:**
    ```bash
    cp .env.example .env
-   # Edit .env with your AWS credentials and OVP settings
+   # Edit .env with your AWS credentials and OVP settings (optional)
    ```
 
-   Required environment variables:
+   Environment variables (optional - can also be configured via admin UI):
    ```bash
    # AWS S3 Configuration
    AWS_ACCESS_KEY_ID=your_access_key
@@ -38,10 +38,12 @@ A Drupal 10 application with direct S3 video uploads using Uppy on the client-si
    AWS_S3_REGION=eu-west-1
    AWS_S3_UPLOAD_PREFIX=upload/YOUR_PUBLICATION/
 
-   # Blue Billywig OVP Configuration (optional)
+   # Blue Billywig OVP Configuration
    BB_PUBLICATION=YOUR_PUBLICATION
    BB_API_SECRET=123-yoursecretstring
    ```
+
+   **Note:** All settings can be configured through Drupal's admin interface at `/admin/config/media/s3-uppy` after installation. Environment variables are used as fallback values.
 
 2. **Start the Docker stack:**
    ```bash
@@ -63,7 +65,13 @@ A Drupal 10 application with direct S3 video uploads using Uppy on the client-si
    docker-compose exec drupal drush cr
    ```
 
-5. **Access the upload form:**
+5. **Configure settings:**
+   - Visit http://localhost:8080/admin/config/media/s3-uppy
+   - Enter your AWS S3 credentials
+   - Enter your Blue Billywig OVP settings (optional)
+   - Or rely on environment variables from `.env` file
+
+6. **Access the upload form:**
    - Visit http://localhost:8080/s3-video-upload
 
 ## How It Works
@@ -98,6 +106,25 @@ The system integrates with Blue Billywig OVP for automatic media management:
 
 For detailed OVP integration documentation, see [OVP_INTEGRATION.md](OVP_INTEGRATION.md).
 
+## Configuration
+
+### Admin UI (Recommended)
+
+Configure all settings through the Drupal admin interface:
+- Navigate to: **Configuration > Media > S3 Uppy Settings**
+- Or visit: http://localhost:8080/admin/config/media/s3-uppy
+
+The settings form includes:
+- **AWS S3 Configuration**: Access key, secret key, bucket, region, upload prefix, endpoint
+- **Blue Billywig OVP Configuration**: Publication name, API secret
+
+### Environment Variables (Fallback)
+
+If settings are not configured in the admin UI, the system will fall back to environment variables from the `.env` file. This allows for:
+- Container-level configuration
+- Different settings per environment (dev/staging/prod)
+- Secure credential management
+
 ## Development
 
 The custom module is located in `custom_module/` and is mounted into the Drupal container.
@@ -110,13 +137,18 @@ custom_module/
 │   ├── Controller/
 │   │   └── S3UploadController.php    # S3 presigned URLs & upload registration
 │   ├── Form/
-│   │   └── S3VideoUploadForm.php     # Upload form with title/description
+│   │   ├── S3VideoUploadForm.php     # Upload form with title/description
+│   │   └── S3UppySettingsForm.php    # Admin configuration form
 │   └── Service/
 │       └── BlueBillywigOvpClient.php # OVP API client with TOTP
+├── config/
+│   └── schema/
+│       └── s3_uppy.schema.yml        # Configuration schema
 ├── js/
 │   └── s3-uppy-upload.js             # Uppy integration
 ├── css/
 │   └── s3-uppy.css                   # Styling
+├── s3_uppy.links.menu.yml            # Admin menu link
 └── composer.json                      # Dependencies (AWS SDK, TOTP)
 ```
 

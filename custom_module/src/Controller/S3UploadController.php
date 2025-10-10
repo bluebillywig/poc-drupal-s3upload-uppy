@@ -16,6 +16,21 @@ use Symfony\Component\HttpFoundation\Request;
 class S3UploadController extends ControllerBase {
 
   /**
+   * Get configuration value with fallback to environment variable.
+   */
+  protected function getConfigValue($key, $env_var, $default = '') {
+    $config = \Drupal::config('s3_uppy.settings');
+    $value = $config->get($key);
+
+    // Fall back to environment variable if config is empty
+    if (empty($value)) {
+      $value = getenv($env_var) ?: $default;
+    }
+
+    return $value;
+  }
+
+  /**
    * Generate a presigned URL for S3 upload.
    */
   public function generatePresignedUrl(Request $request) {
@@ -58,21 +73,33 @@ class S3UploadController extends ControllerBase {
 
     // Sanitize filename
     $filename = preg_replace('/[^a-zA-Z0-9._-]/', '', $filename);
-    $prefix = getenv('AWS_S3_UPLOAD_PREFIX') ?: 'upload/';
+    $prefix = $this->getConfigValue('aws_s3_upload_prefix', 'AWS_S3_UPLOAD_PREFIX', 'upload/');
     $key = $prefix . uniqid() . '_' . $filename;
 
     try {
-      // Initialize S3 client
-      $s3Client = new S3Client([
-        'version' => 'latest',
-        'region' => getenv('AWS_S3_REGION') ?: 'us-east-1',
-        'credentials' => [
-          'key' => getenv('AWS_ACCESS_KEY_ID'),
-          'secret' => getenv('AWS_SECRET_ACCESS_KEY'),
-        ],
-      ]);
+      // Get AWS credentials from config or environment
+      $accessKey = $this->getConfigValue('aws_access_key_id', 'AWS_ACCESS_KEY_ID');
+      $secretKey = $this->getConfigValue('aws_secret_access_key', 'AWS_SECRET_ACCESS_KEY');
+      $region = $this->getConfigValue('aws_s3_region', 'AWS_S3_REGION', 'us-east-1');
+      $bucket = $this->getConfigValue('aws_s3_bucket', 'AWS_S3_BUCKET');
+      $endpoint = $this->getConfigValue('aws_s3_endpoint', 'AWS_S3_ENDPOINT');
 
-      $bucket = getenv('AWS_S3_BUCKET');
+      // Initialize S3 client
+      $s3Config = [
+        'version' => 'latest',
+        'region' => $region,
+        'credentials' => [
+          'key' => $accessKey,
+          'secret' => $secretKey,
+        ],
+      ];
+
+      // Add endpoint if configured (for MinIO or other S3-compatible services)
+      if (!empty($endpoint)) {
+        $s3Config['endpoint'] = $endpoint;
+      }
+
+      $s3Client = new S3Client($s3Config);
 
       // Create presigned request
       $cmd = $s3Client->getCommand('PutObject', [
