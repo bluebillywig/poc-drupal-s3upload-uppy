@@ -73,18 +73,28 @@ class BlueBillywigOvpClient {
    *   The source ID (GUID).
    * @param string $originalFilename
    *   The original filename.
+   * @param string $title
+   *   The clip title.
+   * @param string $description
+   *   The clip description.
    *
    * @return array
    *   The MediaClip object with id field.
    *
    * @throws \Exception
    */
-  public function createMediaClip($guid, $originalFilename = '') {
+  public function createMediaClip($guid, $originalFilename = '', $title = '', $description = '') {
     $url = 'https://' . $this->hostname . '/sapi/mediaclip';
 
     $payload = ['sourceid' => $guid];
     if (!empty($originalFilename)) {
       $payload['originalfilename'] = $originalFilename;
+    }
+    if (!empty($title)) {
+      $payload['title'] = $title;
+    }
+    if (!empty($description)) {
+      $payload['description'] = $description;
     }
 
     $payloadJson = json_encode($payload);
@@ -174,15 +184,19 @@ class BlueBillywigOvpClient {
    *   The source ID (GUID).
    * @param string $originalFilename
    *   The original filename.
+   * @param string $title
+   *   The clip title.
+   * @param string $description
+   *   The clip description.
    *
    * @return array
    *   Array with 'uploadidentifier' and 'mediaclipId'.
    *
    * @throws \Exception
    */
-  public function registerUpload($guid, $originalFilename = '') {
+  public function registerUpload($guid, $originalFilename = '', $title = '', $description = '') {
     // Step 1: Create MediaClip
-    $mediaclip = $this->createMediaClip($guid, $originalFilename);
+    $mediaclip = $this->createMediaClip($guid, $originalFilename, $title, $description);
     $mediaclipId = $mediaclip['id'];
 
     // Step 2: Get upload identifier

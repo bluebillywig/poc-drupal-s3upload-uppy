@@ -41,6 +41,12 @@
         ovpInfoDiv.innerHTML = '<em>Registering upload with Blue Billywig OVP...</em>';
 
         try {
+          // Get title and description from form fields
+          const titleField = document.getElementById('clip-title-field');
+          const descriptionField = document.getElementById('clip-description-field');
+          const title = titleField ? titleField.value : '';
+          const description = descriptionField ? descriptionField.value : '';
+
           const response = await fetch(uppySettings.generateUploadIdentifierEndpoint, {
             method: 'POST',
             headers: {
@@ -48,6 +54,8 @@
             },
             body: JSON.stringify({
               filename: file.name,
+              title: title,
+              description: description,
             }),
           });
 

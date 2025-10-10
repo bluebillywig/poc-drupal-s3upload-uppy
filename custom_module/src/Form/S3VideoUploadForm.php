@@ -38,6 +38,25 @@ class S3VideoUploadForm extends FormBase {
       '#markup' => '<p>Upload video files directly to S3. Supported formats: MP4, MOV, AVI, WebM, OGG, MXF, MPG, MPEG, MKV. Maximum size: 20GB.</p>',
     ];
 
+    $form['clip_title'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Title'),
+      '#description' => $this->t('Title for the video clip (optional).'),
+      '#attributes' => [
+        'id' => 'clip-title-field',
+      ],
+    ];
+
+    $form['clip_description'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Description'),
+      '#description' => $this->t('Description for the video clip (optional).'),
+      '#rows' => 3,
+      '#attributes' => [
+        'id' => 'clip-description-field',
+      ],
+    ];
+
     $form['ovp_info'] = [
       '#type' => 'markup',
       '#markup' => '<div id="ovp-info" style="margin-bottom: 1em;"><em>Select or drop a video file to begin...</em></div>',
