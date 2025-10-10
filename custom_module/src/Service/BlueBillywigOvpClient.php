@@ -38,7 +38,8 @@ class BlueBillywigOvpClient {
     $apiSecretFull = getenv('OVP_API_SECRET');
     $this->hostname = getenv('OVP_HOSTNAME');
 
-    // Parse the API secret (format: 123-lewfjlekrjfger)
+    // Parse the API secret (format: 123-secret)
+    // The ID and secret are separated, but only the secret is used for TOTP
     if ($apiSecretFull && strpos($apiSecretFull, '-') !== FALSE) {
       list($this->apiId, $this->apiSecret) = explode('-', $apiSecretFull, 2);
     }
@@ -54,7 +55,7 @@ class BlueBillywigOvpClient {
    *   The TOTP token in format: <id>-<otp>
    */
   protected function generateRpcToken() {
-    // Base32 encode the secret string before using with TOTP
+    // Base32 encode ONLY the secret (without the ID prefix) before using with TOTP
     $base32Secret = Base32::encodeUpper($this->apiSecret);
 
     $totp = TOTP::createFromSecret($base32Secret);
