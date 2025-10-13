@@ -163,10 +163,10 @@
                                       '<p><strong>MediaClip ID:</strong> ' + ovpData.mediaclipId + '</p>' +
                                       '<p style="margin-bottom: 0;"><strong>What\'s next?</strong></p>' +
                                       '<ul style="margin-top: 5px;">' +
-                                      '<li><a href="/admin/content/media" target="_blank" style="font-weight: bold;">View all media</a> - Find your video in the media library</li>' +
-                                      '<li><a href="/media/' + data.media_id + '" target="_blank" style="font-weight: bold;">Preview this video</a> - See the embedded player</li>' +
-                                      '<li>Use the media library to embed this video in your content (articles, pages, etc.)</li>' +
-                                      '<li>The video will automatically render with the Blue Billywig player</li>' +
+                                      '<li><a href="/s3-uppy/preview/' + data.media_id + '" target="_blank" style="font-weight: bold;">Preview Video</a> - See how the embedded player looks</li>' +
+                                      '<li><a href="/admin/content/media" target="_blank" style="font-weight: bold;">Go to Media Library</a> - View and manage all your videos</li>' +
+                                      '<li><strong>To use this video:</strong> When editing content (articles, pages, etc.), use the "Add media" button and select this video from the library</li>' +
+                                      '<li>The video will automatically render with the Blue Billywig player when displayed</li>' +
                                       '</ul>' +
                                       '<button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">Upload Another Video</button>' +
                                       '</div>';

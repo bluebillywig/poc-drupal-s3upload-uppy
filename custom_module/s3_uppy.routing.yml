@@ -38,13 +38,13 @@ s3_uppy.get_embed_code:
     _permission: 'upload videos to s3'
     _method: 'POST'
 
-s3_uppy.media_view:
-  path: '/media/{media}'
+s3_uppy.media_preview:
+  path: '/s3-uppy/preview/{media}'
   defaults:
     _controller: '\Drupal\s3_uppy\Controller\MediaViewController::view'
-    _title_callback: '\Drupal\s3_uppy\Controller\MediaViewController::view'
+    _title: 'Video Preview'
   requirements:
-    _entity_access: 'media.view'
+    _permission: 'upload videos to s3'
     media: \d+
 
 s3_uppy.settings:
