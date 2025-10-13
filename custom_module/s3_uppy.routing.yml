@@ -47,6 +47,14 @@ s3_uppy.media_preview:
     _permission: 'upload videos to s3'
     media: \d+
 
+s3_uppy.videos_list:
+  path: '/s3-uppy/videos'
+  defaults:
+    _controller: '\Drupal\s3_uppy\Controller\MediaDemoController::listVideos'
+    _title: 'Blue Billywig Videos'
+  requirements:
+    _permission: 'upload videos to s3'
+
 s3_uppy.settings:
   path: '/admin/config/media/s3-uppy'
   defaults:

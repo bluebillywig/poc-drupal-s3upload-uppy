@@ -165,12 +165,13 @@
                                       '<p style="margin: 5px 0;"><strong>Media ID:</strong> ' + data.media_id + '</p>' +
                                       '<p style="margin: 5px 0;"><strong>MediaClip ID:</strong> ' + ovpData.mediaclipId + '</p>' +
                                       '</div>' +
-                                      '<h4 style="margin: 15px 0 10px 0;">How to use this video:</h4>' +
+                                      '<h4 style="margin: 15px 0 10px 0;">View your video:</h4>' +
+                                      '<p style="margin: 10px 0;"><a href="/s3-uppy/videos" target="_blank" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 3px; font-weight: bold;">📺 View All Videos</a></p>' +
+                                      '<h4 style="margin: 15px 0 10px 0;">Or manage via Media Library:</h4>' +
                                       '<ol style="margin-top: 5px; padding-left: 20px;">' +
                                       '<li style="margin-bottom: 10px;"><a href="/admin/content/media" target="_blank" style="font-weight: bold;">Open the Media Library</a></li>' +
                                       '<li style="margin-bottom: 10px;">Find your video named "' + videoName + '"</li>' +
-                                      '<li style="margin-bottom: 10px;">When editing any content (article, page, etc.), click "Add media" and select this video</li>' +
-                                      '<li style="margin-bottom: 10px;">The Blue Billywig player will automatically render when the page is viewed</li>' +
+                                      '<li style="margin-bottom: 10px;">Use the media library to embed videos in content</li>' +
                                       '</ol>' +
                                       '<p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; font-size: 14px;">' +
                                       '<strong>💡 Tip:</strong> Your video is now a reusable media entity. You can embed it in multiple pieces of content!' +
