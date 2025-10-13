@@ -156,12 +156,25 @@
             const data = await response.json();
 
             if (data.media_id) {
-              ovpInfoDiv.innerHTML += '<br><br><strong style="color: green;">✓ Video uploaded successfully!</strong><br>' +
-                                      '<strong>Media ID:</strong> ' + data.media_id + '<br>' +
-                                      '<a href="/media/' + data.media_id + '/edit" target="_blank">Edit media</a> | ' +
-                                      '<a href="/media/' + data.media_id + '" target="_blank">View media</a>';
+              // Clear the info div and show success message
+              ovpInfoDiv.innerHTML = '<div style="padding: 20px; background: #d4edda; border: 2px solid #28a745; border-radius: 5px; margin: 20px 0;">' +
+                                      '<h3 style="color: #155724; margin-top: 0;">✓ Video Uploaded Successfully!</h3>' +
+                                      '<p><strong>Media ID:</strong> ' + data.media_id + '</p>' +
+                                      '<p><strong>MediaClip ID:</strong> ' + ovpData.mediaclipId + '</p>' +
+                                      '<p style="margin-bottom: 0;"><strong>What\'s next?</strong></p>' +
+                                      '<ul style="margin-top: 5px;">' +
+                                      '<li><a href="/media/' + data.media_id + '/edit" target="_blank" style="font-weight: bold;">Edit this video</a> - Change title, description, etc.</li>' +
+                                      '<li><a href="/media/' + data.media_id + '" target="_blank" style="font-weight: bold;">View this video</a> - See how it renders</li>' +
+                                      '<li><a href="/admin/content/media" target="_blank" style="font-weight: bold;">Browse all media</a> - View all uploaded videos</li>' +
+                                      '<li>Add this video to content using the media library</li>' +
+                                      '</ul>' +
+                                      '<button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">Upload Another Video</button>' +
+                                      '</div>';
+
+              // Remove uppy dashboard
+              document.getElementById('uppy-dashboard').style.display = 'none';
             } else {
-              ovpInfoDiv.innerHTML += '<br><strong style="color: green;">✓ Upload completed!</strong>';
+              ovpInfoDiv.innerHTML += '<br><strong style="color: orange;">⚠ Upload completed but media entity was not created.</strong>';
             }
 
           } catch (error) {
