@@ -163,10 +163,10 @@
                                       '<p><strong>MediaClip ID:</strong> ' + ovpData.mediaclipId + '</p>' +
                                       '<p style="margin-bottom: 0;"><strong>What\'s next?</strong></p>' +
                                       '<ul style="margin-top: 5px;">' +
-                                      '<li><a href="/media/' + data.media_id + '/edit" target="_blank" style="font-weight: bold;">Edit this video</a> - Change title, description, etc.</li>' +
-                                      '<li><a href="/media/' + data.media_id + '" target="_blank" style="font-weight: bold;">View this video</a> - See how it renders</li>' +
-                                      '<li><a href="/admin/content/media" target="_blank" style="font-weight: bold;">Browse all media</a> - View all uploaded videos</li>' +
-                                      '<li>Add this video to content using the media library</li>' +
+                                      '<li><a href="/admin/content/media" target="_blank" style="font-weight: bold;">View all media</a> - Find your video in the media library</li>' +
+                                      '<li><a href="/media/' + data.media_id + '" target="_blank" style="font-weight: bold;">Preview this video</a> - See the embedded player</li>' +
+                                      '<li>Use the media library to embed this video in your content (articles, pages, etc.)</li>' +
+                                      '<li>The video will automatically render with the Blue Billywig player</li>' +
                                       '</ul>' +
                                       '<button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">Upload Another Video</button>' +
                                       '</div>';
@@ -174,7 +174,7 @@
               // Remove uppy dashboard
               document.getElementById('uppy-dashboard').style.display = 'none';
             } else {
-              ovpInfoDiv.innerHTML += '<br><strong style="color: orange;">⚠ Upload completed but media entity was not created.</strong>';
+              ovpInfoDiv.innerHTML += '<br><strong style="color: orange;">⚠ Upload completed but media entity was not created. Make sure the media type "bluebillywig_video" exists.</strong>';
             }
 
           } catch (error) {
