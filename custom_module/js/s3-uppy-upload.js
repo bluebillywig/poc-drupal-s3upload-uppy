@@ -130,36 +130,42 @@
         },
       });
 
-      // Handle upload success - fetch and display embed code
+      // Handle upload success - create media entity
       uppy.on('complete', async (result) => {
         if (result.successful.length > 0 && ovpData && ovpData.mediaclipId) {
-          ovpInfoDiv.innerHTML += '<br><em>Fetching embed code...</em>';
+          ovpInfoDiv.innerHTML += '<br><em>Creating media entity...</em>';
 
           try {
-            const response = await fetch(uppySettings.getEmbedCodeEndpoint, {
+            const file = result.successful[0];
+            const titleField = document.getElementById('clip-title-field');
+            const title = titleField ? titleField.value : '';
+
+            const response = await fetch(uppySettings.uploadCompleteEndpoint, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
+                key: file.meta.key,
+                filename: file.name,
                 mediaclipId: ovpData.mediaclipId,
+                title: title,
               }),
             });
 
             const data = await response.json();
 
-            if (data.error) {
-              ovpInfoDiv.innerHTML += '<br><strong style="color: red;">Error fetching embed code: ' + data.error + '</strong>';
-              return;
+            if (data.media_id) {
+              ovpInfoDiv.innerHTML += '<br><br><strong style="color: green;">✓ Video uploaded successfully!</strong><br>' +
+                                      '<strong>Media ID:</strong> ' + data.media_id + '<br>' +
+                                      '<a href="/media/' + data.media_id + '/edit" target="_blank">Edit media</a> | ' +
+                                      '<a href="/media/' + data.media_id + '" target="_blank">View media</a>';
+            } else {
+              ovpInfoDiv.innerHTML += '<br><strong style="color: green;">✓ Upload completed!</strong>';
             }
 
-            // Display embed code
-            ovpInfoDiv.innerHTML += '<br><br><strong>Embed Code:</strong><br>' +
-                                    '<textarea readonly style="width: 100%; height: 150px; font-family: monospace; font-size: 12px;">' +
-                                    data.embedCode + '</textarea>';
-
           } catch (error) {
-            ovpInfoDiv.innerHTML += '<br><strong style="color: red;">Failed to fetch embed code: ' + error.message + '</strong>';
+            ovpInfoDiv.innerHTML += '<br><strong style="color: red;">Error: ' + error.message + '</strong>';
           }
         }
       });

@@ -1,0 +1,25 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.bluebillywig_video.field_mediaclip_id
+    - media.type.bluebillywig_video
+  module:
+    - s3_uppy
+id: media.bluebillywig_video.default
+targetEntityType: media
+bundle: bluebillywig_video
+mode: default
+content:
+  field_mediaclip_id:
+    type: bluebillywig_embed
+    weight: 0
+    region: content
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  created: true
+  name: true
+  thumbnail: true
+  uid: true

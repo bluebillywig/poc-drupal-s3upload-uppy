@@ -197,6 +197,10 @@ class S3UploadController extends ControllerBase {
       // Get embed code from OVP
       $ovpClient = new \Drupal\s3_uppy\Service\BlueBillywigOvpClient();
       $embedCode = $ovpClient->getEmbedCode($mediaclipId, $playout);
+      $arEmbedCode = json_decode($embedCode,true);
+      if (! empty($arEmbedCode['body'])) {
+		$embedCode = $arEmbedCode['body'];
+      }
 
       return new JsonResponse([
         'embedCode' => $embedCode,
@@ -221,6 +225,8 @@ class S3UploadController extends ControllerBase {
     $data = json_decode($request->getContent(), TRUE);
     $key = $data['key'] ?? '';
     $filename = $data['filename'] ?? '';
+    $mediaclip_id = $data['mediaclipId'] ?? '';
+    $title = $data['title'] ?? '';
 
     // Log the successful upload
     \Drupal::logger('s3_uppy')->info('Video uploaded successfully: @filename (S3 key: @key)', [
@@ -228,11 +234,30 @@ class S3UploadController extends ControllerBase {
       '@key' => $key,
     ]);
 
-    // Here you could:
-    // - Create a node/entity to track the uploaded file
-    // - Send notifications
-    // - Trigger additional processing
-    // - Store metadata in the database
+    // Create media entity for the uploaded video
+    if (!empty($mediaclip_id)) {
+      try {
+        $media = \Drupal::entityTypeManager()->getStorage('media')->create([
+          'bundle' => 'bluebillywig_video',
+          'name' => !empty($title) ? $title : $filename,
+          'field_mediaclip_id' => $mediaclip_id,
+          'uid' => \Drupal::currentUser()->id(),
+        ]);
+        $media->save();
+
+        return new JsonResponse([
+          'success' => TRUE,
+          'message' => 'Upload completed successfully',
+          'key' => $key,
+          'media_id' => $media->id(),
+        ]);
+      }
+      catch (\Exception $e) {
+        \Drupal::logger('s3_uppy')->error('Failed to create media entity: @error', [
+          '@error' => $e->getMessage(),
+        ]);
+      }
+    }
 
     return new JsonResponse([
       'success' => TRUE,

@@ -1,0 +1,12 @@
+langcode: en
+status: true
+dependencies: {  }
+id: bluebillywig_video
+label: 'Blue Billywig Video'
+description: 'A video hosted on Blue Billywig OVP'
+source: bluebillywig_video
+queue_thumbnail_downloads: false
+new_revision: false
+source_configuration:
+  source_field: field_mediaclip_id
+field_map: {  }

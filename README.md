@@ -88,8 +88,8 @@ A Drupal 10 application with direct S3 video uploads using Uppy on the client-si
 4. System generates S3 presigned URL with upload identifier as metadata
 5. File uploads directly to S3 from browser
 6. Upload identifier links S3 object to MediaClip in OVP
-7. After upload completes, system fetches JavaScript embed code from OVP
-8. Embed code is displayed to user for easy copying/pasting into Drupal content
+7. After upload completes, system creates a Drupal media entity with the MediaClip ID
+8. Media entity can be embedded in content, and will automatically fetch and render the embed code
 
 ### Architecture
 
@@ -106,7 +106,8 @@ The system integrates with Blue Billywig OVP for automatic media management:
 - **MediaClip Creation**: Automatic registration on file selection
 - **Metadata Support**: Original filename, title, and description
 - **Upload Tracking**: Identifier stored as S3 metadata (`x-amz-meta-uploadidentifier`)
-- **Embed Code Generation**: Automatic JavaScript embed code retrieval after upload using configurable playout
+- **Media Entity Integration**: Creates Drupal media entities with "Blue Billywig Video" type
+- **Automatic Embed Rendering**: Custom field formatter fetches and renders embed code when media is displayed
 
 For detailed OVP integration documentation, see [OVP_INTEGRATION.md](OVP_INTEGRATION.md).
 
