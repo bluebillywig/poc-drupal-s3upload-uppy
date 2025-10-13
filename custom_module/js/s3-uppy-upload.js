@@ -156,19 +156,26 @@
             const data = await response.json();
 
             if (data.media_id) {
+              const videoName = title || file.name;
               // Clear the info div and show success message
               ovpInfoDiv.innerHTML = '<div style="padding: 20px; background: #d4edda; border: 2px solid #28a745; border-radius: 5px; margin: 20px 0;">' +
                                       '<h3 style="color: #155724; margin-top: 0;">✓ Video Uploaded Successfully!</h3>' +
-                                      '<p><strong>Media ID:</strong> ' + data.media_id + '</p>' +
-                                      '<p><strong>MediaClip ID:</strong> ' + ovpData.mediaclipId + '</p>' +
-                                      '<p style="margin-bottom: 0;"><strong>What\'s next?</strong></p>' +
-                                      '<ul style="margin-top: 5px;">' +
-                                      '<li><a href="/s3-uppy/preview/' + data.media_id + '" target="_blank" style="font-weight: bold;">Preview Video</a> - See how the embedded player looks</li>' +
-                                      '<li><a href="/admin/content/media" target="_blank" style="font-weight: bold;">Go to Media Library</a> - View and manage all your videos</li>' +
-                                      '<li><strong>To use this video:</strong> When editing content (articles, pages, etc.), use the "Add media" button and select this video from the library</li>' +
-                                      '<li>The video will automatically render with the Blue Billywig player when displayed</li>' +
-                                      '</ul>' +
-                                      '<button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">Upload Another Video</button>' +
+                                      '<div style="background: white; padding: 15px; border-radius: 3px; margin: 15px 0;">' +
+                                      '<p style="margin: 5px 0;"><strong>Name:</strong> ' + videoName + '</p>' +
+                                      '<p style="margin: 5px 0;"><strong>Media ID:</strong> ' + data.media_id + '</p>' +
+                                      '<p style="margin: 5px 0;"><strong>MediaClip ID:</strong> ' + ovpData.mediaclipId + '</p>' +
+                                      '</div>' +
+                                      '<h4 style="margin: 15px 0 10px 0;">How to use this video:</h4>' +
+                                      '<ol style="margin-top: 5px; padding-left: 20px;">' +
+                                      '<li style="margin-bottom: 10px;"><a href="/admin/content/media" target="_blank" style="font-weight: bold;">Open the Media Library</a></li>' +
+                                      '<li style="margin-bottom: 10px;">Find your video named "' + videoName + '"</li>' +
+                                      '<li style="margin-bottom: 10px;">When editing any content (article, page, etc.), click "Add media" and select this video</li>' +
+                                      '<li style="margin-bottom: 10px;">The Blue Billywig player will automatically render when the page is viewed</li>' +
+                                      '</ol>' +
+                                      '<p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; font-size: 14px;">' +
+                                      '<strong>💡 Tip:</strong> Your video is now a reusable media entity. You can embed it in multiple pieces of content!' +
+                                      '</p>' +
+                                      '<button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; font-weight: bold;">Upload Another Video</button>' +
                                       '</div>';
 
               // Remove uppy dashboard
