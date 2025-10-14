@@ -14,6 +14,11 @@ use Drupal\media\Entity\Media;
 class OvpSearchForm extends FormBase {
 
   /**
+   * Items per page.
+   */
+  const ITEMS_PER_PAGE = 20;
+
+  /**
    * {@inheritdoc}
    */
   public function getFormId() {
@@ -27,12 +32,18 @@ class OvpSearchForm extends FormBase {
     // Get current sort from form state or URL
     $current_sort = $form_state->getValue('sort') ?? \Drupal::request()->query->get('sort', 'createddate desc');
 
+    // Get current page (0-indexed)
+    $current_page = (int) ($form_state->getValue('page') ?? \Drupal::request()->query->get('page', 0));
+
+    // Get query - default to *:* if empty
+    $query = $form_state->getValue('query') ?? \Drupal::request()->query->get('query', '*:*');
+
     // Search query input
     $form['query'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Search'),
-      '#placeholder' => $this->t('Search videos by title, description, or tags...'),
-      '#default_value' => $form_state->getValue('query', ''),
+      '#placeholder' => $this->t('Search videos by title, description, or tags... (leave empty for all)'),
+      '#default_value' => $query === '*:*' ? '' : $query,
     ];
 
     // Preset filter buttons
@@ -77,10 +88,15 @@ class OvpSearchForm extends FormBase {
       '#attributes' => ['class' => ['filter-button']],
     ];
 
-    // Hidden sort field
+    // Hidden fields for maintaining state
     $form['sort'] = [
       '#type' => 'hidden',
       '#value' => $current_sort,
+    ];
+
+    $form['page'] = [
+      '#type' => 'hidden',
+      '#value' => $current_page,
     ];
 
     // Search button
@@ -94,6 +110,11 @@ class OvpSearchForm extends FormBase {
       '#button_type' => 'primary',
     ];
 
+    // Auto-search on page load if no form submission yet
+    if (!$form_state->has('search_results') && !$form_state->isSubmitted()) {
+      $this->doSearch($form, $form_state, TRUE);
+    }
+
     // Display search results if form has been submitted
     if ($form_state->has('search_results')) {
       $results = $form_state->get('search_results');
@@ -103,9 +124,17 @@ class OvpSearchForm extends FormBase {
         '#attributes' => ['class' => ['ovp-search-results']],
       ];
 
+      $total = $results['totalResults'];
+      $showing_from = ($current_page * self::ITEMS_PER_PAGE) + 1;
+      $showing_to = min(($current_page + 1) * self::ITEMS_PER_PAGE, $total);
+
       $form['results']['info'] = [
         '#markup' => '<div class="search-info">' .
-          $this->t('Found @count results', ['@count' => $results['totalResults']]) .
+          $this->t('Showing @from-@to of @total results', [
+            '@from' => $showing_from,
+            '@to' => $showing_to,
+            '@total' => $total,
+          ]) .
           '</div>',
       ];
 
@@ -119,6 +148,9 @@ class OvpSearchForm extends FormBase {
           '#options' => $this->buildResultsOptions($results['items']),
           '#empty' => $this->t('No results found.'),
         ];
+
+        // Add pager
+        $form['results']['pager'] = $this->buildPager($current_page, $total);
 
         $form['results']['import'] = [
           '#type' => 'submit',
@@ -138,6 +170,127 @@ class OvpSearchForm extends FormBase {
     $form['#attached']['library'][] = 's3_uppy/ovp-search';
 
     return $form;
+  }
+
+  /**
+   * Build pager component.
+   *
+   * @param int $current_page
+   *   Current page number (0-indexed).
+   * @param int $total_results
+   *   Total number of results.
+   *
+   * @return array
+   *   Render array for pager.
+   */
+  protected function buildPager($current_page, $total_results) {
+    $total_pages = (int) ceil($total_results / self::ITEMS_PER_PAGE);
+
+    if ($total_pages <= 1) {
+      return [];
+    }
+
+    $pager = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['pager']],
+    ];
+
+    // Previous link
+    if ($current_page > 0) {
+      $pager['prev'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'a',
+        '#value' => '« Previous',
+        '#attributes' => [
+          'href' => '#',
+          'class' => ['pager__link', 'pager__link--prev'],
+          'onclick' => "document.getElementById('edit-page').value='" . ($current_page - 1) . "'; document.getElementById('ovp-search-form').submit(); return false;",
+        ],
+      ];
+    }
+
+    // Page numbers
+    $start_page = max(0, $current_page - 2);
+    $end_page = min($total_pages - 1, $current_page + 2);
+
+    // First page link
+    if ($start_page > 0) {
+      $pager['first'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'a',
+        '#value' => '1',
+        '#attributes' => [
+          'href' => '#',
+          'class' => ['pager__link'],
+          'onclick' => "document.getElementById('edit-page').value='0'; document.getElementById('ovp-search-form').submit(); return false;",
+        ],
+      ];
+
+      if ($start_page > 1) {
+        $pager['ellipsis1'] = [
+          '#markup' => '<span class="pager__ellipsis">...</span>',
+        ];
+      }
+    }
+
+    // Page number links
+    for ($i = $start_page; $i <= $end_page; $i++) {
+      $is_current = ($i == $current_page);
+
+      if ($is_current) {
+        $pager['page_' . $i] = [
+          '#markup' => '<span class="pager__item pager__item--current">' . ($i + 1) . '</span>',
+        ];
+      }
+      else {
+        $pager['page_' . $i] = [
+          '#type' => 'html_tag',
+          '#tag' => 'a',
+          '#value' => (string) ($i + 1),
+          '#attributes' => [
+            'href' => '#',
+            'class' => ['pager__link'],
+            'onclick' => "document.getElementById('edit-page').value='{$i}'; document.getElementById('ovp-search-form').submit(); return false;",
+          ],
+        ];
+      }
+    }
+
+    // Last page link
+    if ($end_page < $total_pages - 1) {
+      if ($end_page < $total_pages - 2) {
+        $pager['ellipsis2'] = [
+          '#markup' => '<span class="pager__ellipsis">...</span>',
+        ];
+      }
+
+      $pager['last'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'a',
+        '#value' => (string) $total_pages,
+        '#attributes' => [
+          'href' => '#',
+          'class' => ['pager__link'],
+          'onclick' => "document.getElementById('edit-page').value='" . ($total_pages - 1) . "'; document.getElementById('ovp-search-form').submit(); return false;",
+        ],
+      ];
+    }
+
+    // Next link
+    if ($current_page < $total_pages - 1) {
+      $pager['next'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'a',
+        '#value' => 'Next »',
+        '#attributes' => [
+          'href' => '#',
+          'class' => ['pager__link', 'pager__link--next'],
+          'onclick' => "document.getElementById('edit-page').value='" . ($current_page + 1) . "'; document.getElementById('ovp-search-form').submit(); return false;",
+        ],
+      ];
+    }
+
+    return $pager;
   }
 
   /**
@@ -187,7 +340,7 @@ class OvpSearchForm extends FormBase {
             '#attributes' => [
               'class' => ['sortable-header', $is_active ? 'active' : ''],
               'data-sort' => $field . ' ' . $new_dir,
-              'onclick' => "document.getElementById('edit-sort').value='{$field} {$new_dir}'; document.getElementById('ovp-search-form').submit(); return false;",
+              'onclick' => "document.getElementById('edit-sort').value='{$field} {$new_dir}'; document.getElementById('edit-page').value='0'; document.getElementById('ovp-search-form').submit(); return false;",
             ],
           ],
         ];
@@ -329,6 +482,9 @@ class OvpSearchForm extends FormBase {
     // Store filter for the search
     $form_state->set('filter_queries', $filter_queries);
 
+    // Reset to page 0 when filtering
+    $form_state->setValue('page', 0);
+
     // Trigger search
     $this->doSearch($form, $form_state);
   }
@@ -337,18 +493,37 @@ class OvpSearchForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Reset to page 0 on new search
+    $form_state->setValue('page', 0);
     $this->doSearch($form, $form_state);
   }
 
   /**
    * Perform the search.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   * @param bool $auto_load
+   *   TRUE if this is an auto-load on page open.
    */
-  protected function doSearch(array &$form, FormStateInterface $form_state) {
+  protected function doSearch(array &$form, FormStateInterface $form_state, $auto_load = FALSE) {
     try {
       $ovp_client = new BlueBillywigOvpClient();
 
       $query = $form_state->getValue('query', '');
+
+      // Default to *:* if empty
+      if (empty($query)) {
+        $query = '*:*';
+      }
+
       $sort = $form_state->getValue('sort', 'createddate desc');
+      $page = (int) $form_state->getValue('page', 0);
+
+      // Calculate offset
+      $offset = $page * self::ITEMS_PER_PAGE;
 
       // Get filter queries from form state or empty array
       $filter_queries = $form_state->get('filter_queries') ?? [];
@@ -358,17 +533,19 @@ class OvpSearchForm extends FormBase {
         $query,
         $filter_queries,
         $sort,
-        50, // limit - increased to show more results
-        0   // offset
+        self::ITEMS_PER_PAGE,
+        $offset
       );
 
       // Store results in form state for display
       $form_state->set('search_results', $results);
       $form_state->setRebuild(TRUE);
 
-      $this->messenger()->addStatus(
-        $this->t('Found @count videos.', ['@count' => $results['totalResults']])
-      );
+      if (!$auto_load) {
+        $this->messenger()->addStatus(
+          $this->t('Found @count videos.', ['@count' => $results['totalResults']])
+        );
+      }
     }
     catch (\Exception $e) {
       $this->messenger()->addError(
