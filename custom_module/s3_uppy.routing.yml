@@ -55,6 +55,14 @@ s3_uppy.videos_list:
   requirements:
     _permission: 'upload videos to s3'
 
+s3_uppy.ovp_search:
+  path: '/s3-uppy/search'
+  defaults:
+    _controller: '\Drupal\s3_uppy\Controller\OvpSearchController::search'
+    _title: 'Search Blue Billywig Videos'
+  requirements:
+    _permission: 'upload videos to s3'
+
 s3_uppy.settings:
   path: '/admin/config/media/s3-uppy'
   defaults:

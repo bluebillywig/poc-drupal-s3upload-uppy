@@ -241,6 +241,84 @@ class BlueBillywigOvpClient {
   }
 
   /**
+   * Search for MediaClips in the OVP.
+   *
+   * @param string $query
+   *   The search query string.
+   * @param array $filterQueries
+   *   Optional array of filter queries (e.g., ['status:published']).
+   * @param string $sort
+   *   Optional sort parameter (e.g., 'createddate desc').
+   * @param int $limit
+   *   Optional limit for number of results (default: 20).
+   * @param int $offset
+   *   Optional offset for pagination (default: 0).
+   *
+   * @return array
+   *   Search results with 'items' array and 'totalResults' count.
+   *
+   * @throws \Exception
+   */
+  public function searchMediaClips($query = '', array $filterQueries = [], $sort = 'createddate desc', $limit = 20, $offset = 0) {
+    $url = 'https://' . $this->hostname . '/sapi/mediaclip';
+
+    // Build query parameters
+    $params = [];
+    if (!empty($query)) {
+      $params['q'] = $query;
+    }
+
+    // Add filter queries
+    foreach ($filterQueries as $fq) {
+      $params['fq'][] = $fq;
+    }
+
+    if (!empty($sort)) {
+      $params['sort'] = $sort;
+    }
+
+    $params['limit'] = $limit;
+    $params['offset'] = $offset;
+
+    // Build URL with query string
+    $queryString = http_build_query($params);
+    $fullUrl = $url . '?' . $queryString;
+
+    $rpcToken = $this->generateRpcToken();
+
+    $ch = curl_init($fullUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+      'rpctoken: ' . $rpcToken,
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+      throw new \Exception('CURL error: ' . $curlError);
+    }
+
+    if ($httpCode !== 200) {
+      throw new \Exception('OVP API error (HTTP ' . $httpCode . '): ' . $response);
+    }
+
+    $data = json_decode($response, TRUE);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+      throw new \Exception('Invalid JSON response from OVP API: ' . json_last_error_msg());
+    }
+
+    return [
+      'items' => $data['items'] ?? [],
+      'totalResults' => $data['totalResults'] ?? 0,
+      'offset' => $offset,
+      'limit' => $limit,
+    ];
+  }
+
+  /**
    * Register upload identifier in OVP backend.
    *
    * This creates a MediaClip and retrieves the upload identifier.

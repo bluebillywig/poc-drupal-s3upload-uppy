@@ -10,3 +10,11 @@ uppy:
   dependencies:
     - core/drupal
     - core/drupalSettings
+
+ovp-search:
+  version: 1.x
+  css:
+    theme:
+      css/ovp-search.css: {}
+  dependencies:
+    - core/drupal
