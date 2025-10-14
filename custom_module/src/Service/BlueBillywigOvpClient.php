@@ -227,7 +227,17 @@ class BlueBillywigOvpClient {
       throw new \Exception('OVP API error (HTTP ' . $httpCode . '): ' . $response);
     }
 
-    return $response;
+    // Parse JSON response and extract embed code
+    $data = json_decode($response, TRUE);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+      throw new \Exception('Invalid JSON response from OVP API: ' . json_last_error_msg());
+    }
+
+    if (!isset($data['body'])) {
+      throw new \Exception('Missing "body" field in OVP API response');
+    }
+
+    return $data['body'];
   }
 
   /**

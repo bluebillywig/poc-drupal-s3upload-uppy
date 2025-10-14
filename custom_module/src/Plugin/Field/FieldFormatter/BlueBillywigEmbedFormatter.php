@@ -5,6 +5,8 @@ namespace Drupal\s3_uppy\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Render\Markup;
 
 /**
  * Plugin implementation of the 'bluebillywig_embed' formatter.
@@ -41,13 +43,10 @@ class BlueBillywigEmbedFormatter extends FormatterBase {
         $ovp_client = new \Drupal\s3_uppy\Service\BlueBillywigOvpClient();
         $embed_code = $ovp_client->getEmbedCode($mediaclip_id, $playout);
 
-        // Render the embed code as inline JavaScript
+        // Render the embed code as markup
+        // The embed code contains JavaScript that must be rendered as-is
         $elements[$delta] = [
-          '#type' => 'inline_template',
-          '#template' => '<div class="bluebillywig-video">{{ embed_code|raw }}</div>',
-          '#context' => [
-            'embed_code' => $embed_code,
-          ],
+          '#markup' => Markup::create('<div class="bluebillywig-video">' . $embed_code . '</div>'),
         ];
       }
       catch (\Exception $e) {
