@@ -4,6 +4,7 @@ namespace Drupal\s3_uppy\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\s3_uppy\Service\BlueBillywigOvpClient;
 use Drupal\media\Entity\Media;
 
@@ -23,6 +24,9 @@ class OvpSearchForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // Get current sort from form state or URL
+    $current_sort = $form_state->getValue('sort') ?? \Drupal::request()->query->get('sort', 'createddate desc');
+
     // Search query input
     $form['query'] = [
       '#type' => 'textfield',
@@ -31,35 +35,52 @@ class OvpSearchForm extends FormBase {
       '#default_value' => $form_state->getValue('query', ''),
     ];
 
-    // Sort options
+    // Preset filter buttons
+    $form['filters'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['filter-buttons']],
+    ];
+
+    $form['filters']['all'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('All Videos'),
+      '#name' => 'filter_all',
+      '#submit' => ['::filterSubmit'],
+      '#limit_validation_errors' => [],
+      '#attributes' => ['class' => ['filter-button']],
+    ];
+
+    $form['filters']['published'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Published'),
+      '#name' => 'filter_published',
+      '#submit' => ['::filterSubmit'],
+      '#limit_validation_errors' => [],
+      '#attributes' => ['class' => ['filter-button']],
+    ];
+
+    $form['filters']['live'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Live'),
+      '#name' => 'filter_live',
+      '#submit' => ['::filterSubmit'],
+      '#limit_validation_errors' => [],
+      '#attributes' => ['class' => ['filter-button']],
+    ];
+
+    $form['filters']['on_demand'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('On Demand'),
+      '#name' => 'filter_on_demand',
+      '#submit' => ['::filterSubmit'],
+      '#limit_validation_errors' => [],
+      '#attributes' => ['class' => ['filter-button']],
+    ];
+
+    // Hidden sort field
     $form['sort'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Sort by'),
-      '#options' => [
-        'createddate desc' => $this->t('Newest first'),
-        'createddate asc' => $this->t('Oldest first'),
-        'title asc' => $this->t('Title A-Z'),
-        'title desc' => $this->t('Title Z-A'),
-      ],
-      '#default_value' => $form_state->getValue('sort', 'createddate desc'),
-    ];
-
-    // Filter queries (advanced options)
-    $form['advanced'] = [
-      '#type' => 'details',
-      '#title' => $this->t('Advanced Filters'),
-      '#open' => FALSE,
-    ];
-
-    $form['advanced']['status_filter'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Status'),
-      '#options' => [
-        '' => $this->t('- All -'),
-        'status:published' => $this->t('Published'),
-        'status:unpublished' => $this->t('Unpublished'),
-      ],
-      '#default_value' => $form_state->getValue('status_filter', ''),
+      '#type' => 'hidden',
+      '#value' => $current_sort,
     ];
 
     // Search button
@@ -89,14 +110,12 @@ class OvpSearchForm extends FormBase {
       ];
 
       if (!empty($results['items'])) {
+        // Build sortable headers
+        $header = $this->buildSortableHeaders($current_sort);
+
         $form['results']['clips'] = [
           '#type' => 'tableselect',
-          '#header' => [
-            'thumbnail' => $this->t('Thumbnail'),
-            'title' => $this->t('Title'),
-            'id' => $this->t('MediaClip ID'),
-            'created' => $this->t('Created'),
-          ],
+          '#header' => $header,
           '#options' => $this->buildResultsOptions($results['items']),
           '#empty' => $this->t('No results found.'),
         ];
@@ -115,10 +134,67 @@ class OvpSearchForm extends FormBase {
       }
     }
 
-    // Add CSS
+    // Add CSS and JS
     $form['#attached']['library'][] = 's3_uppy/ovp-search';
 
     return $form;
+  }
+
+  /**
+   * Build sortable table headers.
+   *
+   * @param string $current_sort
+   *   Current sort parameter.
+   *
+   * @return array
+   *   Header array with sortable links.
+   */
+  protected function buildSortableHeaders($current_sort) {
+    $headers = [];
+
+    // Parse current sort
+    list($sort_field, $sort_dir) = explode(' ', $current_sort . ' desc');
+
+    $sortable_fields = [
+      'thumbnail' => ['label' => $this->t('Thumbnail'), 'sortable' => FALSE],
+      'title' => ['label' => $this->t('Title'), 'field' => 'title'],
+      'status' => ['label' => $this->t('Status'), 'field' => 'status'],
+      'sourcetype' => ['label' => $this->t('Type'), 'field' => 'sourcetype'],
+      'duration' => ['label' => $this->t('Duration'), 'field' => 'length'],
+      'id' => ['label' => $this->t('MediaClip ID'), 'field' => 'id'],
+      'created' => ['label' => $this->t('Created'), 'field' => 'createddate'],
+    ];
+
+    foreach ($sortable_fields as $key => $config) {
+      if (isset($config['sortable']) && !$config['sortable']) {
+        $headers[$key] = $config['label'];
+      }
+      else {
+        $field = $config['field'];
+        $is_active = ($sort_field == $field);
+        $new_dir = ($is_active && $sort_dir == 'asc') ? 'desc' : 'asc';
+        $arrow = '';
+
+        if ($is_active) {
+          $arrow = $sort_dir == 'asc' ? ' ▲' : ' ▼';
+        }
+
+        $headers[$key] = [
+          'data' => [
+            '#type' => 'link',
+            '#title' => $config['label'] . $arrow,
+            '#url' => Url::fromRoute('<current>'),
+            '#attributes' => [
+              'class' => ['sortable-header', $is_active ? 'active' : ''],
+              'data-sort' => $field . ' ' . $new_dir,
+              'onclick' => "document.getElementById('edit-sort').value='{$field} {$new_dir}'; document.getElementById('ovp-search-form').submit(); return false;",
+            ],
+          ],
+        ];
+      }
+    }
+
+    return $headers;
   }
 
   /**
@@ -132,6 +208,7 @@ class OvpSearchForm extends FormBase {
    */
   protected function buildResultsOptions(array $items) {
     $options = [];
+    $ovp_client = new BlueBillywigOvpClient();
 
     foreach ($items as $item) {
       $id = $item['id'] ?? '';
@@ -143,15 +220,21 @@ class OvpSearchForm extends FormBase {
       $existing = $this->checkExistingMedia($id);
       $title_suffix = $existing ? ' <em>(Already imported)</em>' : '';
 
+      // Get authenticated thumbnail URL
       $thumbnail = '';
-      if (!empty($item['assets']['image'] ?? NULL)) {
-        $thumbnail_url = $item['assets']['image'];
+      try {
+        $config = \Drupal::config('s3_uppy.settings');
+        $publication = $config->get('bb_publication') ?: getenv('BB_PUBLICATION');
+        $thumbnail_url = $ovp_client->getAuthenticatedThumbnailUrl($id, $publication);
         $thumbnail = '<img src="' . htmlspecialchars($thumbnail_url) . '" alt="' . htmlspecialchars($item['title'] ?? '') . '" style="max-width: 120px; height: auto;" />';
       }
+      catch (\Exception $e) {
+        $thumbnail = '<em>No thumbnail</em>';
+      }
 
+      // Format created date
       $created = '';
       if (!empty($item['createddate'])) {
-        // Handle both timestamp (int) and date string formats
         if (is_numeric($item['createddate'])) {
           $created = date('Y-m-d H:i', (int) $item['createddate']);
         } else {
@@ -159,9 +242,31 @@ class OvpSearchForm extends FormBase {
         }
       }
 
+      // Format duration
+      $duration = '';
+      if (!empty($item['length'])) {
+        $seconds = (int) $item['length'];
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $secs = $seconds % 60;
+
+        if ($hours > 0) {
+          $duration = sprintf('%d:%02d:%02d', $hours, $minutes, $secs);
+        } else {
+          $duration = sprintf('%d:%02d', $minutes, $secs);
+        }
+      }
+
+      // Get status and source type
+      $status = ucfirst($item['status'] ?? 'unknown');
+      $sourcetype = ucfirst($item['sourcetype'] ?? 'unknown');
+
       $options[$id] = [
         'thumbnail' => ['data' => ['#markup' => $thumbnail]],
         'title' => ['data' => ['#markup' => htmlspecialchars($item['title'] ?? 'Untitled') . $title_suffix]],
+        'status' => $status,
+        'sourcetype' => $sourcetype,
+        'duration' => $duration,
         'id' => $id,
         'created' => $created,
         '#disabled' => $existing,
@@ -194,28 +299,66 @@ class OvpSearchForm extends FormBase {
   }
 
   /**
+   * Filter submit handler.
+   */
+  public function filterSubmit(array &$form, FormStateInterface $form_state) {
+    $triggering_element = $form_state->getTriggeringElement();
+    $filter_name = $triggering_element['#name'] ?? '';
+
+    $filter_queries = [];
+
+    switch ($filter_name) {
+      case 'filter_published':
+        $filter_queries[] = 'status:published';
+        break;
+
+      case 'filter_live':
+        $filter_queries[] = 'sourcetype:live';
+        break;
+
+      case 'filter_on_demand':
+        $filter_queries[] = 'sourcetype:on_demand';
+        break;
+
+      case 'filter_all':
+      default:
+        // No filters
+        break;
+    }
+
+    // Store filter for the search
+    $form_state->set('filter_queries', $filter_queries);
+
+    // Trigger search
+    $this->doSearch($form, $form_state);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $this->doSearch($form, $form_state);
+  }
+
+  /**
+   * Perform the search.
+   */
+  protected function doSearch(array &$form, FormStateInterface $form_state) {
     try {
       $ovp_client = new BlueBillywigOvpClient();
 
       $query = $form_state->getValue('query', '');
       $sort = $form_state->getValue('sort', 'createddate desc');
 
-      // Build filter queries
-      $filter_queries = [];
-      $status_filter = $form_state->getValue('status_filter', '');
-      if (!empty($status_filter)) {
-        $filter_queries[] = $status_filter;
-      }
+      // Get filter queries from form state or empty array
+      $filter_queries = $form_state->get('filter_queries') ?? [];
 
       // Perform search
       $results = $ovp_client->searchMediaClips(
         $query,
         $filter_queries,
         $sort,
-        20, // limit
+        50, // limit - increased to show more results
         0   // offset
       );
 

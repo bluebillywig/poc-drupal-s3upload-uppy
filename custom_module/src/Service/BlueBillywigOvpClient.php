@@ -316,10 +316,28 @@ class BlueBillywigOvpClient {
 
     return [
       'items' => $data['items'] ?? [],
-      'totalResults' => $data['totalResults'] ?? 0,
+      'totalResults' => $data['numFound'] ?? $data['totalResults'] ?? 0,
       'offset' => $offset,
       'limit' => $limit,
     ];
+  }
+
+  /**
+   * Get authenticated thumbnail URL for a MediaClip.
+   *
+   * @param int $mediaclipId
+   *   The MediaClip ID.
+   * @param string $publication
+   *   The publication name.
+   *
+   * @return string
+   *   The authenticated thumbnail URL with rpctoken.
+   */
+  public function getAuthenticatedThumbnailUrl($mediaclipId, $publication) {
+    $rpcToken = $this->generateRpcToken();
+    $url = 'https://' . $publication . '.bbvms.com/mediaclip/' . $mediaclipId . '/spthumbnail/default/default';
+    $url .= '?rpctoken=' . urlencode($rpcToken);
+    return $url;
   }
 
   /**

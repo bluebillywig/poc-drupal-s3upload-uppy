@@ -2,6 +2,71 @@
  * Styles for OVP Search interface
  */
 
+/* Filter buttons */
+.filter-buttons {
+  margin: 1rem 0;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-button {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.filter-button:hover {
+  background: #e8e8e8;
+  border-color: #999;
+}
+
+/* Sortable headers */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-header:hover {
+  text-decoration: underline;
+}
+
+.sortable-header.active {
+  font-weight: 600;
+  color: #0073aa;
+}
+
+/* Pagination */
+.pager {
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pager a,
+.pager span {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: #fff;
+  text-decoration: none;
+  color: #333;
+  border-radius: 4px;
+}
+
+.pager a:hover {
+  background: #f5f5f5;
+}
+
+.pager .pager__item--current {
+  background: #0073aa;
+  color: #fff;
+  border-color: #0073aa;
+}
+
 .ovp-search-results {
   margin-top: 2rem;
 }
