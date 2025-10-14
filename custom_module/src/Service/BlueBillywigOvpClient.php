@@ -286,6 +286,10 @@ class BlueBillywigOvpClient {
 
     $rpcToken = $this->generateRpcToken();
 
+    // Debug logging
+    error_log("OVP SEARCH - URL: " . $fullUrl);
+    error_log("OVP SEARCH - RPC Token: " . $rpcToken);
+
     $ch = curl_init($fullUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
