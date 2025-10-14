@@ -151,7 +151,12 @@ class OvpSearchForm extends FormBase {
 
       $created = '';
       if (!empty($item['createddate'])) {
-        $created = date('Y-m-d H:i', $item['createddate']);
+        // Handle both timestamp (int) and date string formats
+        if (is_numeric($item['createddate'])) {
+          $created = date('Y-m-d H:i', (int) $item['createddate']);
+        } else {
+          $created = $item['createddate'];
+        }
       }
 
       $options[$id] = [
