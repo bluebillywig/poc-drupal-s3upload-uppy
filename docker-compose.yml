@@ -28,6 +28,7 @@ services:
       # Blue Billywig OVP Configuration
       - BB_PUBLICATION=${BB_PUBLICATION}
       - BB_API_SECRET=${BB_API_SECRET}
+      - BB_PLAYOUT=${BB_PLAYOUT:-default}
     depends_on:
       - mysql
     restart: unless-stopped

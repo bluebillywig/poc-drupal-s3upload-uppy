@@ -29,6 +29,7 @@ class S3VideoUploadForm extends FormBase {
       'generateUrlEndpoint' => '/s3-uppy/generate-url',
       'uploadCompleteEndpoint' => '/s3-uppy/upload-complete',
       'generateUploadIdentifierEndpoint' => '/s3-uppy/generate-upload-identifier',
+      'getEmbedCodeEndpoint' => '/s3-uppy/get-embed-code',
       'maxFileSize' => 1024 * 1024 * 1024 * 20, // 20GB
       'allowedFileTypes' => ['.mp4', '.mov', '.avi', '.webm', '.ogg', '.mxf', '.mpg', '.mpeg', '.mkv'],
     ];

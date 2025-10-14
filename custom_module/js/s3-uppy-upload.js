@@ -130,9 +130,65 @@
         },
       });
 
-      // Event handlers (should be the same)
-      uppy.on('upload-success', (file, response) => {
-        // ... your code
+      // Handle upload success - create media entity
+      uppy.on('complete', async (result) => {
+        if (result.successful.length > 0 && ovpData && ovpData.mediaclipId) {
+          ovpInfoDiv.innerHTML += '<br><em>Creating media entity...</em>';
+
+          try {
+            const file = result.successful[0];
+            const titleField = document.getElementById('clip-title-field');
+            const title = titleField ? titleField.value : '';
+
+            const response = await fetch(uppySettings.uploadCompleteEndpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                key: file.meta.key,
+                filename: file.name,
+                mediaclipId: ovpData.mediaclipId,
+                title: title,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.media_id) {
+              const videoName = title || file.name;
+              // Clear the info div and show success message
+              ovpInfoDiv.innerHTML = '<div style="padding: 20px; background: #d4edda; border: 2px solid #28a745; border-radius: 5px; margin: 20px 0;">' +
+                                      '<h3 style="color: #155724; margin-top: 0;">✓ Video Uploaded Successfully!</h3>' +
+                                      '<div style="background: white; padding: 15px; border-radius: 3px; margin: 15px 0;">' +
+                                      '<p style="margin: 5px 0;"><strong>Name:</strong> ' + videoName + '</p>' +
+                                      '<p style="margin: 5px 0;"><strong>Media ID:</strong> ' + data.media_id + '</p>' +
+                                      '<p style="margin: 5px 0;"><strong>MediaClip ID:</strong> ' + ovpData.mediaclipId + '</p>' +
+                                      '</div>' +
+                                      '<h4 style="margin: 15px 0 10px 0;">View your video:</h4>' +
+                                      '<p style="margin: 10px 0;"><a href="/s3-uppy/videos" target="_blank" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 3px; font-weight: bold;">📺 View All Videos</a></p>' +
+                                      '<h4 style="margin: 15px 0 10px 0;">Or manage via Media Library:</h4>' +
+                                      '<ol style="margin-top: 5px; padding-left: 20px;">' +
+                                      '<li style="margin-bottom: 10px;"><a href="/admin/content/media" target="_blank" style="font-weight: bold;">Open the Media Library</a></li>' +
+                                      '<li style="margin-bottom: 10px;">Find your video named "' + videoName + '"</li>' +
+                                      '<li style="margin-bottom: 10px;">Use the media library to embed videos in content</li>' +
+                                      '</ol>' +
+                                      '<p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; font-size: 14px;">' +
+                                      '<strong>💡 Tip:</strong> Your video is now a reusable media entity. You can embed it in multiple pieces of content!' +
+                                      '</p>' +
+                                      '<button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 14px; font-weight: bold;">Upload Another Video</button>' +
+                                      '</div>';
+
+              // Remove uppy dashboard
+              document.getElementById('uppy-dashboard').style.display = 'none';
+            } else {
+              ovpInfoDiv.innerHTML += '<br><strong style="color: orange;">⚠ Upload completed but media entity was not created. Make sure the media type "bluebillywig_video" exists.</strong>';
+            }
+
+          } catch (error) {
+            ovpInfoDiv.innerHTML += '<br><strong style="color: red;">Error: ' + error.message + '</strong>';
+          }
+        }
       });
     }
   };
