@@ -314,9 +314,15 @@ class BlueBillywigOvpClient {
       throw new \Exception('Invalid JSON response from OVP API: ' . json_last_error_msg());
     }
 
+    // Debug logging
+    error_log("OVP SEARCH - Response keys: " . implode(', ', array_keys($data)));
+    error_log("OVP SEARCH - numfound: " . ($data['numfound'] ?? 'not set'));
+    error_log("OVP SEARCH - count: " . ($data['count'] ?? 'not set'));
+    error_log("OVP SEARCH - items count: " . count($data['items'] ?? []));
+
     return [
       'items' => $data['items'] ?? [],
-      'totalResults' => $data['numFound'] ?? $data['totalResults'] ?? 0,
+      'totalResults' => $data['numfound'] ?? $data['count'] ?? 0,
       'offset' => $offset,
       'limit' => $limit,
     ];

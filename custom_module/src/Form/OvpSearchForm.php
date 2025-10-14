@@ -29,14 +29,24 @@ class OvpSearchForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    // Get current sort from form state or URL
-    $current_sort = $form_state->getValue('sort') ?? \Drupal::request()->query->get('sort', 'createddate desc');
+    // Get user input first (from form submission), then form state values, then defaults
+    $user_input = $form_state->getUserInput();
+
+    // Debug logging
+    error_log("BUILD FORM - User input page: " . ($user_input['page'] ?? 'not set'));
+    error_log("BUILD FORM - Form state page: " . ($form_state->getValue('page') ?? 'not set'));
+    error_log("BUILD FORM - Is submitted: " . ($form_state->isSubmitted() ? 'yes' : 'no'));
+
+    // Get current sort
+    $current_sort = $user_input['sort'] ?? $form_state->getValue('sort') ?? \Drupal::request()->query->get('sort', 'createddate desc');
 
     // Get current page (0-indexed)
-    $current_page = (int) ($form_state->getValue('page') ?? \Drupal::request()->query->get('page', 0));
+    $current_page = (int) ($user_input['page'] ?? $form_state->getValue('page') ?? \Drupal::request()->query->get('page', 0));
+
+    error_log("BUILD FORM - Final current_page: " . $current_page);
 
     // Get query - default to *:* if empty
-    $query = $form_state->getValue('query') ?? \Drupal::request()->query->get('query', '*:*');
+    $query = $user_input['query'] ?? $form_state->getValue('query') ?? \Drupal::request()->query->get('query', '*:*');
 
     // Search query input
     $form['query'] = [
@@ -112,7 +122,7 @@ class OvpSearchForm extends FormBase {
 
     // Auto-search on page load if no form submission yet
     if (!$form_state->has('search_results') && !$form_state->isSubmitted()) {
-      $this->doSearch($form, $form_state, TRUE);
+      $this->doSearch($form, $form_state, TRUE, $current_page, $current_sort, $query);
     }
 
     // Display search results if form has been submitted
@@ -125,17 +135,22 @@ class OvpSearchForm extends FormBase {
       ];
 
       $total = $results['totalResults'];
-      $showing_from = ($current_page * self::ITEMS_PER_PAGE) + 1;
-      $showing_to = min(($current_page + 1) * self::ITEMS_PER_PAGE, $total);
+
+      if ($total > 0) {
+        $showing_from = ($current_page * self::ITEMS_PER_PAGE) + 1;
+        $showing_to = min(($current_page + 1) * self::ITEMS_PER_PAGE, $total);
+        $info_text = $this->t('Showing @from-@to of @total results', [
+          '@from' => $showing_from,
+          '@to' => $showing_to,
+          '@total' => $total,
+        ]);
+      }
+      else {
+        $info_text = $this->t('0 results');
+      }
 
       $form['results']['info'] = [
-        '#markup' => '<div class="search-info">' .
-          $this->t('Showing @from-@to of @total results', [
-            '@from' => $showing_from,
-            '@to' => $showing_to,
-            '@total' => $total,
-          ]) .
-          '</div>',
+        '#markup' => '<div class="search-info">' . $info_text . '</div>',
       ];
 
       if (!empty($results['items'])) {
@@ -195,16 +210,18 @@ class OvpSearchForm extends FormBase {
       '#attributes' => ['class' => ['pager']],
     ];
 
+    // Get current query parameters
+    $current_params = \Drupal::request()->query->all();
+
     // Previous link
     if ($current_page > 0) {
+      $prev_params = array_merge($current_params, ['page' => $current_page - 1]);
       $pager['prev'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'a',
-        '#value' => '« Previous',
+        '#type' => 'link',
+        '#title' => '« Previous',
+        '#url' => Url::fromRoute('<current>', [], ['query' => $prev_params]),
         '#attributes' => [
-          'href' => '#',
           'class' => ['pager__link', 'pager__link--prev'],
-          'onclick' => "document.getElementById('edit-page').value='" . ($current_page - 1) . "'; document.getElementById('ovp-search-form').submit(); return false;",
         ],
       ];
     }
@@ -215,14 +232,13 @@ class OvpSearchForm extends FormBase {
 
     // First page link
     if ($start_page > 0) {
+      $first_params = array_merge($current_params, ['page' => 0]);
       $pager['first'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'a',
-        '#value' => '1',
+        '#type' => 'link',
+        '#title' => '1',
+        '#url' => Url::fromRoute('<current>', [], ['query' => $first_params]),
         '#attributes' => [
-          'href' => '#',
           'class' => ['pager__link'],
-          'onclick' => "document.getElementById('edit-page').value='0'; document.getElementById('ovp-search-form').submit(); return false;",
         ],
       ];
 
@@ -243,14 +259,13 @@ class OvpSearchForm extends FormBase {
         ];
       }
       else {
+        $page_params = array_merge($current_params, ['page' => $i]);
         $pager['page_' . $i] = [
-          '#type' => 'html_tag',
-          '#tag' => 'a',
-          '#value' => (string) ($i + 1),
+          '#type' => 'link',
+          '#title' => (string) ($i + 1),
+          '#url' => Url::fromRoute('<current>', [], ['query' => $page_params]),
           '#attributes' => [
-            'href' => '#',
             'class' => ['pager__link'],
-            'onclick' => "document.getElementById('edit-page').value='{$i}'; document.getElementById('ovp-search-form').submit(); return false;",
           ],
         ];
       }
@@ -264,28 +279,26 @@ class OvpSearchForm extends FormBase {
         ];
       }
 
+      $last_params = array_merge($current_params, ['page' => $total_pages - 1]);
       $pager['last'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'a',
-        '#value' => (string) $total_pages,
+        '#type' => 'link',
+        '#title' => (string) $total_pages,
+        '#url' => Url::fromRoute('<current>', [], ['query' => $last_params]),
         '#attributes' => [
-          'href' => '#',
           'class' => ['pager__link'],
-          'onclick' => "document.getElementById('edit-page').value='" . ($total_pages - 1) . "'; document.getElementById('ovp-search-form').submit(); return false;",
         ],
       ];
     }
 
     // Next link
     if ($current_page < $total_pages - 1) {
+      $next_params = array_merge($current_params, ['page' => $current_page + 1]);
       $pager['next'] = [
-        '#type' => 'html_tag',
-        '#tag' => 'a',
-        '#value' => 'Next »',
+        '#type' => 'link',
+        '#title' => 'Next »',
+        '#url' => Url::fromRoute('<current>', [], ['query' => $next_params]),
         '#attributes' => [
-          'href' => '#',
           'class' => ['pager__link', 'pager__link--next'],
-          'onclick' => "document.getElementById('edit-page').value='" . ($current_page + 1) . "'; document.getElementById('ovp-search-form').submit(); return false;",
         ],
       ];
     }
@@ -318,6 +331,9 @@ class OvpSearchForm extends FormBase {
       'created' => ['label' => $this->t('Created'), 'field' => 'createddate'],
     ];
 
+    // Get current query parameters
+    $current_params = \Drupal::request()->query->all();
+
     foreach ($sortable_fields as $key => $config) {
       if (isset($config['sortable']) && !$config['sortable']) {
         $headers[$key] = $config['label'];
@@ -332,15 +348,19 @@ class OvpSearchForm extends FormBase {
           $arrow = $sort_dir == 'asc' ? ' ▲' : ' ▼';
         }
 
+        // Build URL with sort and reset page to 0
+        $sort_params = array_merge($current_params, [
+          'sort' => $field . ' ' . $new_dir,
+          'page' => 0,
+        ]);
+
         $headers[$key] = [
           'data' => [
             '#type' => 'link',
             '#title' => $config['label'] . $arrow,
-            '#url' => Url::fromRoute('<current>'),
+            '#url' => Url::fromRoute('<current>', [], ['query' => $sort_params]),
             '#attributes' => [
               'class' => ['sortable-header', $is_active ? 'active' : ''],
-              'data-sort' => $field . ' ' . $new_dir,
-              'onclick' => "document.getElementById('edit-sort').value='{$field} {$new_dir}'; document.getElementById('edit-page').value='0'; document.getElementById('ovp-search-form').submit(); return false;",
             ],
           ],
         ];
@@ -507,20 +527,36 @@ class OvpSearchForm extends FormBase {
    *   The form state.
    * @param bool $auto_load
    *   TRUE if this is an auto-load on page open.
+   * @param int|null $page
+   *   Optional page number to use instead of form state value.
+   * @param string|null $sort
+   *   Optional sort string to use instead of form state value.
+   * @param string|null $query
+   *   Optional query string to use instead of form state value.
    */
-  protected function doSearch(array &$form, FormStateInterface $form_state, $auto_load = FALSE) {
+  protected function doSearch(array &$form, FormStateInterface $form_state, $auto_load = FALSE, $page = NULL, $sort = NULL, $query = NULL) {
     try {
       $ovp_client = new BlueBillywigOvpClient();
 
-      $query = $form_state->getValue('query', '');
+      // Use provided query or get from form state
+      if ($query === NULL) {
+        $query = $form_state->getValue('query', '');
+      }
 
       // Default to *:* if empty
       if (empty($query)) {
         $query = '*:*';
       }
 
-      $sort = $form_state->getValue('sort', 'createddate desc');
-      $page = (int) $form_state->getValue('page', 0);
+      // Use provided sort or get from form state
+      if ($sort === NULL) {
+        $sort = $form_state->getValue('sort', 'createddate desc');
+      }
+
+      // Use provided page or get from form state
+      if ($page === NULL) {
+        $page = (int) $form_state->getValue('page', 0);
+      }
 
       // Calculate offset
       $offset = $page * self::ITEMS_PER_PAGE;
@@ -591,11 +627,20 @@ class OvpSearchForm extends FormBase {
       }
 
       try {
+        // Get thumbnail URL
+        $ovp_client = new BlueBillywigOvpClient();
+        $config = \Drupal::config('s3_uppy.settings');
+        $publication = $config->get('bb_publication') ?: getenv('BB_PUBLICATION');
+        $thumbnail_url = $ovp_client->getAuthenticatedThumbnailUrl($mediaclip_id, $publication);
+
         // Create media entity
         $media = Media::create([
           'bundle' => 'bluebillywig_video',
           'name' => $item['title'] ?? 'Video ' . $mediaclip_id,
           'field_mediaclip_id' => $mediaclip_id,
+          'field_thumbnail_url' => [
+            'uri' => $thumbnail_url,
+          ],
           'uid' => \Drupal::currentUser()->id(),
           'status' => 1,
         ]);

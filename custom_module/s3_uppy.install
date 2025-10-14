@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the S3 Uppy module.
+ */
+
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
+
+/**
+ * Add thumbnail URL field to bluebillywig_video media type.
+ */
+function s3_uppy_update_9001() {
+  // Check if field storage already exists
+  $field_storage = FieldStorageConfig::loadByName('media', 'field_thumbnail_url');
+  if (!$field_storage) {
+    // Create field storage
+    $field_storage = FieldStorageConfig::create([
+      'field_name' => 'field_thumbnail_url',
+      'entity_type' => 'media',
+      'type' => 'link',
+      'cardinality' => 1,
+    ]);
+    $field_storage->save();
+  }
+
+  // Check if field already exists
+  $field = FieldConfig::loadByName('media', 'bluebillywig_video', 'field_thumbnail_url');
+  if (!$field) {
+    // Create field instance
+    $field = FieldConfig::create([
+      'field_storage' => $field_storage,
+      'bundle' => 'bluebillywig_video',
+      'label' => 'Thumbnail URL',
+      'description' => 'External URL to the Blue Billywig video thumbnail',
+      'required' => FALSE,
+      'settings' => [
+        'link_type' => 16, // External links only
+        'title' => 0, // No title field
+      ],
+    ]);
+    $field->save();
+  }
+
+  return t('Added thumbnail URL field to bluebillywig_video media type.');
+}

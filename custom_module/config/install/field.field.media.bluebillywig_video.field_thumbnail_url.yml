@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_thumbnail_url
+    - media.type.bluebillywig_video
+  module:
+    - link
+id: media.bluebillywig_video.field_thumbnail_url
+field_name: field_thumbnail_url
+entity_type: media
+bundle: bluebillywig_video
+label: 'Thumbnail URL'
+description: 'External URL to the Blue Billywig video thumbnail'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  link_type: 16
+  title: 0
+field_type: link
