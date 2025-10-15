@@ -9,39 +9,54 @@ use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
 
 /**
- * Add thumbnail URL field to bluebillywig_video media type.
+ * Add thumbnail image field to bluebillywig_video media type.
  */
 function s3_uppy_update_9001() {
   // Check if field storage already exists
-  $field_storage = FieldStorageConfig::loadByName('media', 'field_thumbnail_url');
+  $field_storage = FieldStorageConfig::loadByName('media', 'field_thumbnail');
   if (!$field_storage) {
     // Create field storage
     $field_storage = FieldStorageConfig::create([
-      'field_name' => 'field_thumbnail_url',
+      'field_name' => 'field_thumbnail',
       'entity_type' => 'media',
-      'type' => 'link',
+      'type' => 'image',
       'cardinality' => 1,
+      'settings' => [
+        'target_type' => 'file',
+        'display_field' => FALSE,
+        'display_default' => FALSE,
+        'uri_scheme' => 'public',
+      ],
     ]);
     $field_storage->save();
   }
 
   // Check if field already exists
-  $field = FieldConfig::loadByName('media', 'bluebillywig_video', 'field_thumbnail_url');
+  $field = FieldConfig::loadByName('media', 'bluebillywig_video', 'field_thumbnail');
   if (!$field) {
     // Create field instance
     $field = FieldConfig::create([
       'field_storage' => $field_storage,
       'bundle' => 'bluebillywig_video',
-      'label' => 'Thumbnail URL',
-      'description' => 'External URL to the Blue Billywig video thumbnail',
+      'label' => 'Thumbnail',
+      'description' => 'Cached thumbnail image from Blue Billywig',
       'required' => FALSE,
       'settings' => [
-        'link_type' => 16, // External links only
-        'title' => 0, // No title field
+        'file_directory' => 'bluebillywig/thumbnails',
+        'file_extensions' => 'png gif jpg jpeg',
+        'max_filesize' => '',
+        'max_resolution' => '',
+        'min_resolution' => '',
+        'alt_field' => FALSE,
+        'alt_field_required' => FALSE,
+        'title_field' => FALSE,
+        'title_field_required' => FALSE,
+        'handler' => 'default:file',
+        'handler_settings' => [],
       ],
     ]);
     $field->save();
   }
 
-  return t('Added thumbnail URL field to bluebillywig_video media type.');
+  return t('Added thumbnail image field to bluebillywig_video media type.');
 }

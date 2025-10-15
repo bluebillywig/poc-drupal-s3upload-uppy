@@ -627,23 +627,56 @@ class OvpSearchForm extends FormBase {
       }
 
       try {
-        // Get thumbnail URL
+        // Get thumbnail URL and fetch the image
         $ovp_client = new BlueBillywigOvpClient();
         $config = \Drupal::config('s3_uppy.settings');
         $publication = $config->get('bb_publication') ?: getenv('BB_PUBLICATION');
         $thumbnail_url = $ovp_client->getAuthenticatedThumbnailUrl($mediaclip_id, $publication);
 
+        // Fetch the thumbnail image
+        $thumbnail_file = NULL;
+        try {
+          $image_data = file_get_contents($thumbnail_url);
+          if ($image_data !== FALSE) {
+            // Create directory if it doesn't exist
+            $directory = 'public://bluebillywig/thumbnails';
+            \Drupal::service('file_system')->prepareDirectory($directory, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY);
+
+            // Save the file
+            $filename = $mediaclip_id . '.jpg';
+            $file_uri = $directory . '/' . $filename;
+            $file = \Drupal::service('file.repository')->writeData($image_data, $file_uri, \Drupal\Core\File\FileSystemInterface::EXISTS_REPLACE);
+
+            if ($file) {
+              $thumbnail_file = [
+                'target_id' => $file->id(),
+              ];
+            }
+          }
+        }
+        catch (\Exception $thumb_error) {
+          // Log thumbnail fetch error but continue with import
+          \Drupal::logger('s3_uppy')->warning('Failed to fetch thumbnail for @id: @error', [
+            '@id' => $mediaclip_id,
+            '@error' => $thumb_error->getMessage(),
+          ]);
+        }
+
         // Create media entity
-        $media = Media::create([
+        $media_values = [
           'bundle' => 'bluebillywig_video',
           'name' => $item['title'] ?? 'Video ' . $mediaclip_id,
           'field_mediaclip_id' => $mediaclip_id,
-          'field_thumbnail_url' => [
-            'uri' => $thumbnail_url,
-          ],
           'uid' => \Drupal::currentUser()->id(),
           'status' => 1,
-        ]);
+        ];
+
+        // Add thumbnail if we successfully fetched it
+        if ($thumbnail_file) {
+          $media_values['field_thumbnail'] = $thumbnail_file;
+        }
+
+        $media = Media::create($media_values);
         $media->save();
 
         $imported_count++;
